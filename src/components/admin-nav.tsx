@@ -12,9 +12,16 @@ const ENLACES = [
 export function AdminNav({ esPropietario = false }: { esPropietario?: boolean }) {
   const ruta = usePathname();
 
-  const enlaces = esPropietario
-    ? [...ENLACES, { href: "/admin/pagina", etiqueta: "🖼️ Página e Imágenes" }]
-    : ENLACES;
+  const enlaces = [
+    ...ENLACES,
+    ...(esPropietario
+      ? [
+          { href: "/admin/usuarios", etiqueta: "👥 Usuarios" },
+          { href: "/admin/pagina", etiqueta: "🖼️ Página e Imágenes" },
+        ]
+      : []),
+    { href: "/admin/perfil", etiqueta: "👤 Mi Perfil" },
+  ];
 
   return (
     <nav className="sidebar-nav">

@@ -737,6 +737,17 @@ h1, h2, h3, h4, .brand-title {
 }
 .compact-item strong { display: block; font-size: 0.88rem; }
 .compact-item small { color: var(--text-muted); font-size: 0.76rem; }
+.user-edit-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.user-edit-row input[type="text"] {
+  width: 190px;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 0.85rem;
+}
 .filters-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0.8rem; margin-bottom: 1.5rem; }
 .admin-cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 1.35rem; }
 .admin-event-card {

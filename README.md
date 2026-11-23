@@ -11,6 +11,11 @@ Después de eso, el propietario puede subir imágenes desde:
 
 La administradora solo puede ver el sitio y el panel; no ve esas opciones de edición.
 
+También ejecuta una vez `supabase/setup-perfiles.sql` para habilitar la edición del
+nombre del perfil propio y, por parte del propietario, de cualquier usuario.
+Orden sugerido: primero `setup-imagenes.sql` y después `setup-perfiles.sql`.
+Si ya ejecutaste el de imágenes, solo corre el de perfiles.
+
 ## Getting Started
 
 First, run the development server:

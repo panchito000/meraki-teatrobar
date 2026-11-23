@@ -190,3 +190,65 @@ export async function actualizarPagina(formData: FormData) {
   revalidatePath('/admin')
   redirect('/admin/pagina?guardado=1')
 }
+
+export async function actualizarMiPerfil(formData: FormData) {
+  const { supabase, user } = await requireUsuario()
+  if (!user) redirect('/login')
+
+  const nombre = campo(formData, 'nombre')
+  const password = campo(formData, 'password')
+  const confirmar = campo(formData, 'confirmar_password')
+
+  if (!nombre) redirect('/admin/perfil?error=El%20nombre%20es%20obligatorio.')
+  if (password && password !== confirmar) {
+    redirect('/admin/perfil?error=Las%20contrase%C3%B1as%20no%20coinciden.')
+  }
+  if (password && password.length < 8) {
+    redirect('/admin/perfil?error=La%20contrase%C3%B1a%20debe%20tener%20al%20menos%208%20caracteres.')
+  }
+
+  const { error } = await supabase
+    .from('usuarios')
+    .update({ nombre })
+    .eq('id_usuario', user.id)
+  if (error) {
+    redirect(`/admin/perfil?error=${encodeURIComponent(error.message)}`)
+  }
+
+  if (password) {
+    const { error: errorAuth } = await supabase.auth.updateUser({ password })
+    if (errorAuth) {
+      redirect(`/admin/perfil?error=${encodeURIComponent(errorAuth.message)}`)
+    }
+  }
+
+  revalidatePath('/admin')
+  revalidatePath('/admin/perfil')
+  revalidatePath('/admin/usuarios')
+  revalidatePath('/')
+  redirect('/admin/perfil?guardado=1')
+}
+
+export async function actualizarNombreUsuario(formData: FormData) {
+  const { supabase } = await requirePropietario()
+  const id = campo(formData, 'id')
+  const nombre = campo(formData, 'nombre')
+
+  if (!id || !nombre) {
+    redirect('/admin/usuarios?error=Datos%20incompletos.')
+  }
+
+  const { error } = await supabase
+    .from('usuarios')
+    .update({ nombre })
+    .eq('id_usuario', id)
+  if (error) {
+    redirect(`/admin/usuarios?error=${encodeURIComponent(error.message)}`)
+  }
+
+  revalidatePath('/admin')
+  revalidatePath('/admin/perfil')
+  revalidatePath('/admin/usuarios')
+  revalidatePath('/')
+  redirect('/admin/usuarios?guardado=1')
+}
