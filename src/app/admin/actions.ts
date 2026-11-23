@@ -168,6 +168,11 @@ export async function actualizarPagina(formData: FormData) {
     tiktok: opcional(formData, 'tiktok'),
     facebook: opcional(formData, 'facebook'),
     discos: opcional(formData, 'discos'),
+    discos_titulo: campo(formData, 'discos_titulo') || CONFIGURACION_DEFAULT.discos_titulo,
+    discos_descripcion:
+      campo(formData, 'discos_descripcion') || CONFIGURACION_DEFAULT.discos_descripcion,
+    passline: opcional(formData, 'passline'),
+    passline_titulo: campo(formData, 'passline_titulo') || CONFIGURACION_DEFAULT.passline_titulo,
     actualizado_en: new Date().toISOString(),
   }
 

@@ -41,5 +41,9 @@ export type ConfiguracionPagina = {
   tiktok: string | null
   facebook: string | null
   discos: string | null
+  discos_titulo: string
+  discos_descripcion: string
+  passline: string | null
+  passline_titulo: string
   actualizado_en: string | null
 }

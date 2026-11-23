@@ -66,6 +66,10 @@ create table if not exists public.configuracion_pagina (
   tiktok text default 'https://www.tiktok.com/@merakiteatro',
   facebook text default 'https://www.facebook.com/merakiteatrobar',
   discos text default 'https://www.instagram.com/discosenlaoscuridad/',
+  discos_titulo text not null default 'Discos en la oscuridad',
+  discos_descripcion text not null default '𝗗𝗜𝗦𝗖𝗢𝗦 𝗘𝗡 𝗟𝗔 𝗢𝗦𝗖𝗨𝗥𝗜𝗗𝗔𝗗 te ofrece una experiencia auditiva distinta, en total oscuridad, sin distracciones y con la más alta calidad de sonido, con el sonido profesional de nuestra sala.',
+  passline text default 'https://www.passline.com/venue/meraki-teatro-bar',
+  passline_titulo text not null default 'Eventos en Passline',
   actualizado_en timestamptz
 );
 
@@ -82,6 +86,10 @@ alter table public.configuracion_pagina add column if not exists instagram text;
 alter table public.configuracion_pagina add column if not exists tiktok text;
 alter table public.configuracion_pagina add column if not exists facebook text;
 alter table public.configuracion_pagina add column if not exists discos text;
+alter table public.configuracion_pagina add column if not exists discos_titulo text;
+alter table public.configuracion_pagina add column if not exists discos_descripcion text;
+alter table public.configuracion_pagina add column if not exists passline text;
+alter table public.configuracion_pagina add column if not exists passline_titulo text;
 alter table public.configuracion_pagina add column if not exists actualizado_en timestamptz;
 
 insert into public.configuracion_pagina (id) values (1)

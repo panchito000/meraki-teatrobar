@@ -167,6 +167,50 @@ export default async function EditarPagina({ searchParams }: Props) {
           </div>
         </div>
 
+        <h3 className="form-section-title">Discos en la oscuridad / Passline</h3>
+
+        <div className="form-group">
+          <label htmlFor="discos_titulo">Título del ciclo</label>
+          <input
+            id="discos_titulo"
+            name="discos_titulo"
+            type="text"
+            defaultValue={configuracion.discos_titulo}
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="discos_descripcion">Descripción</label>
+          <textarea
+            id="discos_descripcion"
+            name="discos_descripcion"
+            rows={4}
+            defaultValue={configuracion.discos_descripcion}
+          />
+        </div>
+
+        <div className="form-grid-dos">
+          <div className="form-group">
+            <label htmlFor="passline_titulo">Texto del enlace</label>
+            <input
+              id="passline_titulo"
+              name="passline_titulo"
+              type="text"
+              defaultValue={configuracion.passline_titulo}
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="passline">URL de Passline</label>
+            <input
+              id="passline"
+              name="passline"
+              type="url"
+              defaultValue={configuracion.passline ?? ""}
+              placeholder="https://www.passline.com/venue/..."
+            />
+          </div>
+        </div>
+
         <div style={{ marginTop: "1.5rem" }}>
           <button type="submit" className="btn btn-primary">
             Guardar cambios de la página

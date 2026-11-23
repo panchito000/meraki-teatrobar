@@ -230,6 +230,34 @@ export default async function Home() {
                   </div>
                 </div>
               </div>
+
+              <div className="discos-card">
+                <span className="section-kicker">Ciclo destacado</span>
+                <h3>{configuracion.discos_titulo}</h3>
+                <p>{configuracion.discos_descripcion}</p>
+                <div className="discos-links">
+                  {configuracion.passline && (
+                    <a
+                      href={configuracion.passline}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-primary btn-sm"
+                    >
+                      {configuracion.passline_titulo} ↗
+                    </a>
+                  )}
+                  {configuracion.discos && (
+                    <a
+                      href={configuracion.discos}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-secondary btn-sm"
+                    >
+                      Instagram ↗
+                    </a>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="about-info-card">
