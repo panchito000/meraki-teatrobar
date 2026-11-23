@@ -1,6 +1,6 @@
--- Ejecutar una vez en Supabase → SQL Editor → New query → Run.
+-- Ejecutar en Supabase → SQL Editor → New query → Run.
 -- Crea el bucket de imágenes, sus políticas RLS y la tabla de configuración
--- de la página pública. El script es idempotente: se puede volver a ejecutar.
+-- de la página pública. Es reejecutable: no borra tablas, datos ni políticas.
 
 -- 1) Bucket público para imágenes de eventos y de la portada.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
@@ -17,38 +17,71 @@ on conflict (id) do update set
   allowed_mime_types = excluded.allowed_mime_types;
 
 -- 2) Políticas del bucket. Solo el PROPIETARIO puede escribir/borrar.
-drop policy if exists "meraki_imagenes_publicas" on storage.objects;
-create policy "meraki_imagenes_publicas"
-on storage.objects for select to anon, authenticated
-using (bucket_id = 'imagenes');
+-- Se crean solo si no existen, para no reemplazar nada.
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'storage' and tablename = 'objects'
+      and policyname = 'meraki_imagenes_publicas'
+  ) then
+    create policy "meraki_imagenes_publicas"
+    on storage.objects for select to anon, authenticated
+    using (bucket_id = 'imagenes');
+  end if;
+end $$;
 
-drop policy if exists "meraki_imagenes_insertar_propietario" on storage.objects;
-create policy "meraki_imagenes_insertar_propietario"
-on storage.objects for insert to authenticated
-with check (
-  bucket_id = 'imagenes'
-  and public.obtener_rol_usuario() = 'PROPIETARIO'
-);
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'storage' and tablename = 'objects'
+      and policyname = 'meraki_imagenes_insertar_propietario'
+  ) then
+    create policy "meraki_imagenes_insertar_propietario"
+    on storage.objects for insert to authenticated
+    with check (
+      bucket_id = 'imagenes'
+      and public.obtener_rol_usuario() = 'PROPIETARIO'
+    );
+  end if;
+end $$;
 
-drop policy if exists "meraki_imagenes_actualizar_propietario" on storage.objects;
-create policy "meraki_imagenes_actualizar_propietario"
-on storage.objects for update to authenticated
-using (
-  bucket_id = 'imagenes'
-  and public.obtener_rol_usuario() = 'PROPIETARIO'
-)
-with check (
-  bucket_id = 'imagenes'
-  and public.obtener_rol_usuario() = 'PROPIETARIO'
-);
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'storage' and tablename = 'objects'
+      and policyname = 'meraki_imagenes_actualizar_propietario'
+  ) then
+    create policy "meraki_imagenes_actualizar_propietario"
+    on storage.objects for update to authenticated
+    using (
+      bucket_id = 'imagenes'
+      and public.obtener_rol_usuario() = 'PROPIETARIO'
+    )
+    with check (
+      bucket_id = 'imagenes'
+      and public.obtener_rol_usuario() = 'PROPIETARIO'
+    );
+  end if;
+end $$;
 
-drop policy if exists "meraki_imagenes_borrar_propietario" on storage.objects;
-create policy "meraki_imagenes_borrar_propietario"
-on storage.objects for delete to authenticated
-using (
-  bucket_id = 'imagenes'
-  and public.obtener_rol_usuario() = 'PROPIETARIO'
-);
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'storage' and tablename = 'objects'
+      and policyname = 'meraki_imagenes_borrar_propietario'
+  ) then
+    create policy "meraki_imagenes_borrar_propietario"
+    on storage.objects for delete to authenticated
+    using (
+      bucket_id = 'imagenes'
+      and public.obtener_rol_usuario() = 'PROPIETARIO'
+    );
+  end if;
+end $$;
 
 -- 3) Contenido editable de la página pública (una sola fila: id = 1).
 create table if not exists public.configuracion_pagina (
@@ -100,13 +133,29 @@ grant update on public.configuracion_pagina to authenticated;
 
 alter table public.configuracion_pagina enable row level security;
 
-drop policy if exists "meraki_config_publica" on public.configuracion_pagina;
-create policy "meraki_config_publica"
-on public.configuracion_pagina for select to anon, authenticated
-using (true);
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'public' and tablename = 'configuracion_pagina'
+      and policyname = 'meraki_config_publica'
+  ) then
+    create policy "meraki_config_publica"
+    on public.configuracion_pagina for select to anon, authenticated
+    using (true);
+  end if;
+end $$;
 
-drop policy if exists "meraki_config_propietario_edita" on public.configuracion_pagina;
-create policy "meraki_config_propietario_edita"
-on public.configuracion_pagina for update to authenticated
-using (public.obtener_rol_usuario() = 'PROPIETARIO')
-with check (public.obtener_rol_usuario() = 'PROPIETARIO');
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'public' and tablename = 'configuracion_pagina'
+      and policyname = 'meraki_config_propietario_edita'
+  ) then
+    create policy "meraki_config_propietario_edita"
+    on public.configuracion_pagina for update to authenticated
+    using (public.obtener_rol_usuario() = 'PROPIETARIO')
+    with check (public.obtener_rol_usuario() = 'PROPIETARIO');
+  end if;
+end $$;
