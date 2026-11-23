@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { StatusBadge } from "@/components/status-badge";
 import { requireUsuario } from "@/lib/auth";
-import { formatearFecha } from "@/lib/formato";
+import { fechaDeHoy, formatearFecha } from "@/lib/formato";
 import type { Evento, Tarea } from "@/lib/types";
 
 export default async function Panel() {
@@ -29,7 +29,9 @@ export default async function Panel() {
   const porcentaje = (cantidad: number) =>
     totalTareas ? (cantidad / totalTareas) * 100 : 0;
 
-  const proximosEventos = [...eventos]
+  const hoy = fechaDeHoy();
+  const proximosEventos = eventos
+    .filter((evento) => evento.fecha.slice(0, 10) >= hoy)
     .sort((a, b) => a.fecha.localeCompare(b.fecha))
     .slice(0, 3);
 
@@ -115,7 +117,7 @@ export default async function Panel() {
           </div>
           <div className="compact-list">
             {proximosEventos.length === 0 ? (
-              <div className="empty-state">No hay eventos registrados.</div>
+              <div className="empty-state">No hay eventos de hoy o de fechas próximas.</div>
             ) : (
               proximosEventos.map((evento) => (
                 <div className="compact-item" key={evento.id_evento}>

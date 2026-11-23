@@ -125,8 +125,8 @@ export default async function DetalleEvento({ params }: Props) {
       <footer className="public-footer">
         <div className="wrap footer-flex">
           <div>
-            <strong>MERAKI TEATRO BAR</strong> — Sistema de Gestión de Eventos y
-            Tareas Promocionales (Prototipo)
+            <strong>Meraki Teatrobar</strong> — Calle Ballivián #159, Santa Cruz
+            de la Sierra
           </div>
           <Link href="/login" className="link-btn">
             Iniciar sesión en el panel

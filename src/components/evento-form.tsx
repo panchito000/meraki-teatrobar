@@ -32,7 +32,7 @@ export function EventoForm({ action, evento, textoBoton }: Props) {
           rows={3}
           required
           defaultValue={evento?.descripcion}
-          placeholder="Detalles del espectáculo, modalidad o alquiler..."
+          placeholder="Qué se presenta, horario, precio, cupos y cómo reservar. Si otra cuenta difunde el evento, indícalo aquí."
         />
       </div>
 
