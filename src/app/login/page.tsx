@@ -7,25 +7,8 @@ import { useState, type FormEvent } from "react";
 import { MerakiMark } from "@/components/meraki-logo";
 import { createClient } from "@/lib/supabase/client";
 
-const CUENTAS = [
-  {
-    rol: "Propietario",
-    descripcion: "Gestión completa de eventos y tareas promocionales",
-    correo: "propietario@meraki.test",
-    clave: "Meraki2026!",
-  },
-  {
-    rol: "Administradora",
-    descripcion: "Acceso de solo lectura (consulta de eventos y tareas)",
-    correo: "propietario1@meraki.test",
-    clave: "Meraki2026!",
-  },
-];
-
 export default function LoginPage() {
   const router = useRouter();
-  const [correo, setCorreo] = useState("");
-  const [clave, setClave] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
 
@@ -34,9 +17,10 @@ export default function LoginPage() {
     setCargando(true);
     setError(null);
 
+    const datos = new FormData(evento.currentTarget);
     const { error } = await createClient().auth.signInWithPassword({
-      email: correo,
-      password: clave,
+      email: String(datos.get("correo") ?? ""),
+      password: String(datos.get("clave") ?? ""),
     });
 
     if (error) {
@@ -73,8 +57,6 @@ export default function LoginPage() {
               required
               autoComplete="email"
               placeholder="correo@meraki.com"
-              value={correo}
-              onChange={(evento) => setCorreo(evento.target.value)}
             />
           </div>
           <div className="form-group">
@@ -86,8 +68,6 @@ export default function LoginPage() {
               required
               autoComplete="current-password"
               placeholder="••••••"
-              value={clave}
-              onChange={(evento) => setClave(evento.target.value)}
             />
           </div>
           {error && <p className="error-text">{error}</p>}
@@ -95,28 +75,6 @@ export default function LoginPage() {
             {cargando ? "Ingresando…" : "Iniciar Sesión"}
           </button>
         </form>
-
-        <div className="demo-accounts-box">
-          <p className="demo-title">Cuentas de demostración (clic para llenar):</p>
-          <div className="demo-grid">
-            {CUENTAS.map((cuenta) => (
-              <button
-                key={cuenta.correo}
-                type="button"
-                className="demo-btn"
-                onClick={() => {
-                  setCorreo(cuenta.correo);
-                  setClave(cuenta.clave);
-                  setError(null);
-                }}
-              >
-                <strong>{cuenta.rol}</strong>
-                <span>{cuenta.descripcion}</span>
-                <code>{cuenta.correo} / {cuenta.clave}</code>
-              </button>
-            ))}
-          </div>
-        </div>
       </div>
     </main>
   );
