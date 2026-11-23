@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { IconoRed } from "@/components/iconos-redes";
 import { MerakiLogo, MerakiMark } from "@/components/meraki-logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { obtenerConfiguracion } from "@/lib/configuracion";
@@ -76,7 +77,9 @@ export default async function Home() {
     { nombre: "TikTok", href: configuracion.tiktok },
     { nombre: "Facebook", href: configuracion.facebook },
     { nombre: "Discos en la oscuridad", href: configuracion.discos },
-  ].filter((red): red is { nombre: string; href: string } => Boolean(red.href));
+  ].filter(
+    (red): red is { nombre: string; href: string } => Boolean(red.href),
+  );
 
   const eventos = (data ?? []) as Evento[];
   const hoy = fechaDeHoy();
@@ -287,6 +290,7 @@ export default async function Home() {
                       rel="noopener noreferrer"
                       className="btn btn-secondary btn-sm"
                     >
+                      <IconoRed nombre="Instagram" />
                       Instagram ↗
                     </a>
                   )}
@@ -376,6 +380,7 @@ export default async function Home() {
                       rel="noopener noreferrer"
                       className="social-chip"
                     >
+                      <IconoRed nombre={red.nombre} />
                       {red.nombre}
                     </a>
                   ))}
@@ -391,8 +396,8 @@ export default async function Home() {
           <div>
             <strong>Meraki Teatrobar</strong> — {configuracion.direccion}
           </div>
-          <Link href="/login" className="link-btn">
-            Iniciar sesión en el panel
+          <Link href={enSesion ? "/admin" : "/login"} className="link-btn">
+            {enSesion ? "Volver al panel" : "Iniciar sesión en el panel"}
           </Link>
         </div>
       </footer>
