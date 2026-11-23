@@ -26,7 +26,11 @@ export default async function Usuarios({ searchParams }: Props) {
 
   const usuarios = ((data ?? []) as Usuario[]).map((usuario) =>
     usuario.id_usuario === user?.id
-      ? { ...usuario, nombre: nombre || usuario.nombre }
+      ? {
+          ...usuario,
+          nombre: nombre || usuario.nombre,
+          correo: user.new_email ?? user.email ?? usuario.correo,
+        }
       : usuario,
   );
 
@@ -41,8 +45,11 @@ export default async function Usuarios({ searchParams }: Props) {
           <span className="section-kicker">Accesos</span>
           <h1>Usuarios del sistema</h1>
           <p className="subtitle">
-            Edita el nombre visible de cada cuenta. El correo y el rol se gestionan
-            en Supabase Auth / base de datos y no se cambian desde aquí.
+            Edita el nombre visible de cada cuenta. Tu correo se cambia en{" "}
+            <Link href="/admin/perfil" className="link-inline">
+              Mi perfil
+            </Link>
+            ; el rol se gestiona en Supabase Auth.
           </p>
         </div>
         <Link href="/admin/perfil" className="btn btn-outline-accent btn-sm">

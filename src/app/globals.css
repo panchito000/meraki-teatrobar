@@ -127,6 +127,11 @@ h1, h2, h3, h4, .brand-title {
   transition: border-color 0.2s ease;
 }
 .btn-icon:hover { border-color: var(--accent-primary); }
+.link-inline {
+  color: var(--accent-primary);
+  font-weight: 600;
+  text-underline-offset: 2px;
+}
 .link-btn {
   background: none;
   border: none;

@@ -270,10 +270,14 @@ export async function actualizarMiPerfil(formData: FormData) {
   if (!user) redirect('/login')
 
   const nombre = campo(formData, 'nombre')
+  const correo = campo(formData, 'correo').toLowerCase()
   const password = campo(formData, 'password')
   const confirmar = campo(formData, 'confirmar_password')
 
   if (!nombre) redirect('/admin/perfil?error=El%20nombre%20es%20obligatorio.')
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) {
+    redirect('/admin/perfil?error=Ingresa%20un%20correo%20electr%C3%B3nico%20v%C3%A1lido.')
+  }
   if (password && password !== confirmar) {
     redirect('/admin/perfil?error=Las%20contrase%C3%B1as%20no%20coinciden.')
   }
@@ -281,26 +285,36 @@ export async function actualizarMiPerfil(formData: FormData) {
     redirect('/admin/perfil?error=La%20contrase%C3%B1a%20debe%20tener%20al%20menos%208%20caracteres.')
   }
 
-  const { error: errorAuth } = await supabase.auth.updateUser({
+  const { data: actualizado, error: errorAuth } = await supabase.auth.updateUser({
     data: { nombre },
+    ...(correo !== (user.new_email ?? user.email) ? { email: correo } : {}),
     ...(password ? { password } : {}),
   })
   if (errorAuth) {
     redirect(`/admin/perfil?error=${encodeURIComponent(errorAuth.message)}`)
   }
 
-  // Si la política RLS de perfiles ya está aplicada, esto sincroniza la tabla.
-  // Si no, el nombre visible sigue funcionando desde el perfil de Auth.
-  await supabase
+  // Supabase puede dejar el correo pendiente hasta que se confirme desde el buzón.
+  const correoPendiente = Boolean(actualizado.user?.new_email)
+
+  // Sincroniza la tabla cuando la política RLS de perfiles está aplicada.
+  // Si no, la cuenta de Auth sigue siendo la fuente del nombre y del correo.
+  const { data: filas, error: errorTabla } = await supabase
     .from('usuarios')
-    .update({ nombre })
+    .update({ nombre, correo })
     .eq('id_usuario', user.id)
+    .select('id_usuario')
+  const sincronizado = !errorTabla && Boolean(filas?.length)
 
   revalidatePath('/admin')
   revalidatePath('/admin/perfil')
   revalidatePath('/admin/usuarios')
   revalidatePath('/')
-  redirect('/admin/perfil?guardado=1')
+
+  const params = new URLSearchParams({ guardado: '1' })
+  if (correoPendiente) params.set('confirmar', '1')
+  if (!sincronizado) params.set('aviso', 'bd')
+  redirect(`/admin/perfil?${params.toString()}`)
 }
 
 export async function actualizarNombreUsuario(formData: FormData) {

@@ -4,7 +4,12 @@ import { requireUsuario } from "@/lib/auth";
 import { actualizarMiPerfil } from "../actions";
 
 type Props = {
-  searchParams: Promise<{ guardado?: string; error?: string }>;
+  searchParams: Promise<{
+    guardado?: string;
+    error?: string;
+    confirmar?: string;
+    aviso?: string;
+  }>;
 };
 
 export default async function MiPerfil({ searchParams }: Props) {
@@ -18,7 +23,7 @@ export default async function MiPerfil({ searchParams }: Props) {
     .maybeSingle();
 
   const nombreActual = perfil?.nombre ?? nombre;
-  const correo = perfil?.correo ?? user?.email ?? "";
+  const correo = user?.new_email ?? user?.email ?? perfil?.correo ?? "";
 
   return (
     <div style={{ maxWidth: "680px" }}>
@@ -31,7 +36,8 @@ export default async function MiPerfil({ searchParams }: Props) {
           <span className="section-kicker">Mi cuenta</span>
           <h1>Mi perfil</h1>
           <p className="subtitle">
-            Actualiza tu nombre visible en el panel y, si quieres, tu contraseña.
+            Actualiza tu nombre visible, tu correo de acceso y, si quieres, tu
+            contraseña.
           </p>
         </div>
         <span className={`role-badge ${rol === "PROPIETARIO" ? "owner" : "viewer"}`}>
@@ -45,11 +51,37 @@ export default async function MiPerfil({ searchParams }: Props) {
       {params.error && (
         <div className="alert-box error">⚠️ {params.error}</div>
       )}
+      {params.confirmar && (
+        <div className="alert-box">
+          ✉️ Revisa tu correo actual y el nuevo para confirmar el cambio. Hasta
+          que lo confirmes, Supabase puede seguir usando el correo anterior para
+          iniciar sesión.
+        </div>
+      )}
+      {params.aviso === "bd" && (
+        <div className="alert-box error">
+          ⚠️ El cambio se guardó en tu cuenta de acceso. Para sincronizar también
+          la tabla de usuarios, ejecuta{" "}
+          <code>supabase/setup-perfiles.sql</code> en Supabase.
+        </div>
+      )}
 
       <form action={actualizarMiPerfil} className="panel-box" style={{ marginTop: "1.25rem" }}>
         <div className="form-group">
-          <label htmlFor="correo_actual">Correo (no editable)</label>
-          <input id="correo_actual" type="text" value={correo} readOnly />
+          <label htmlFor="correo">Correo de acceso *</label>
+          <input
+            id="correo"
+            name="correo"
+            type="email"
+            required
+            autoComplete="email"
+            defaultValue={correo}
+            placeholder="correo@meraki.com"
+          />
+          <small className="field-help">
+            Se actualiza en Supabase Auth. Si tu proyecto pide confirmación,
+            revisa tu buzón para validar el nuevo correo.
+          </small>
         </div>
 
         <div className="form-group">
@@ -69,7 +101,7 @@ export default async function MiPerfil({ searchParams }: Props) {
 
         <h3 className="form-section-title">Cambiar contraseña (opcional)</h3>
         <p className="section-note">
-          Deja ambos campos vacíos si solo quieres cambiar el nombre.
+          Deja ambos campos vacíos si solo quieres cambiar el nombre o el correo.
         </p>
 
         <div className="form-grid-dos">

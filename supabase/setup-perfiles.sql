@@ -1,6 +1,6 @@
 -- Ejecutar en Supabase → SQL Editor → New query → Run.
--- Permite que cada usuario edite su propio nombre y que el propietario
--- pueda editar el nombre de cualquier cuenta. No borra nada.
+-- Permite que cada usuario edite su propio nombre y correo, y que el propietario
+-- pueda editar los de cualquier cuenta. No borra nada.
 
 do $$
 begin
@@ -22,4 +22,4 @@ begin
   end if;
 end $$;
 
-grant update (nombre) on public.usuarios to authenticated;
+grant update (nombre, correo) on public.usuarios to authenticated;
