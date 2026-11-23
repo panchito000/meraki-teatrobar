@@ -32,6 +32,7 @@ export type ConfiguracionPagina = {
   titulo_hero: string
   bajada_hero: string
   imagen_hero: string | null
+  imagen_logo_hero: string | null
   correo: string
   telefono: string
   whatsapp: string | null

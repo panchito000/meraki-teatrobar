@@ -7,7 +7,7 @@ import type { ConfiguracionPagina } from "@/lib/types";
 import { actualizarPagina } from "../actions";
 
 type Props = {
-  searchParams: Promise<{ guardado?: string; error?: string }>;
+  searchParams: Promise<{ guardado?: string; error?: string; aviso?: string }>;
 };
 
 export default async function EditarPagina({ searchParams }: Props) {
@@ -50,6 +50,13 @@ export default async function EditarPagina({ searchParams }: Props) {
       )}
       {params.guardado && (
         <div className="alert-box success">✅ Cambios guardados correctamente.</div>
+      )}
+      {params.aviso === "columna" && (
+        <div className="alert-box error">
+          ⚠️ Se guardaron los cambios, pero falta la columna de la imagen del logo.
+          Vuelve a ejecutar <code>supabase/setup-imagenes.sql</code> en el SQL Editor
+          para poder subirla.
+        </div>
       )}
       {params.error && (
         <div className="alert-box error">
@@ -99,6 +106,14 @@ export default async function EditarPagina({ searchParams }: Props) {
           carpeta="sitio"
           etiqueta="Imagen de fondo de la portada (detrás del texto)"
           ayuda="La imagen cubre todo el hero, detrás del título y los botones. Se aplica un velo oscuro para que el texto se lea bien. Si la quitas, vuelve el fondo de gradiente Meraki."
+        />
+
+        <SubidorImagen
+          name="imagen_logo_hero"
+          value={configuracion.imagen_logo_hero}
+          carpeta="sitio"
+          etiqueta="Imagen del bloque del logo (reemplaza el cuadro MERAKI)"
+          ayuda="Si subes una imagen, el cuadro con el logo MERAKI desaparece y en su lugar se muestra tu imagen. Si la quitas, vuelve el cuadro original."
         />
 
         <h3 className="form-section-title">Contacto</h3>

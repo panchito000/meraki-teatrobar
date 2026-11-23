@@ -384,6 +384,15 @@ h1, h2, h3, h4, .brand-title {
   text-align: center;
   color: #f5f3f0;
 }
+.hero-logo-imagen {
+  border-radius: 15px;
+  min-height: 330px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  box-shadow: 0 20px 45px rgba(217, 3, 104, 0.22);
+  border: 1px solid rgba(224, 169, 109, 0.28);
+}
 .meraki-svg-large { width: 96px; height: 96px; margin-bottom: 0.4rem; }
 .showcase-gradient h3 { font-size: 1.8rem; letter-spacing: 0.22em; }
 .showcase-gradient p { font-size: 0.78rem; letter-spacing: 0.42em; opacity: 0.9; margin: 0.35rem 0 1.1rem; }

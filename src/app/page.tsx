@@ -55,14 +55,17 @@ function TarjetaEvento({ evento }: { evento: Evento }) {
 
 export default async function Home() {
   const supabase = await createClient();
-  const [{ data, error }, configuracion] = await Promise.all([
+  const [{ data, error }, configuracion, { data: sesion }] = await Promise.all([
     supabase
       .from("eventos")
       .select("*")
       .eq("estado_publicacion", "PUBLICADO")
       .order("fecha", { ascending: true }),
     obtenerConfiguracion(),
+    supabase.auth.getUser(),
   ]);
+
+  const enSesion = Boolean(sesion.user);
 
   const fondoHero = configuracion.imagen_hero
     ? estiloPortada(configuracion.imagen_hero, "meraki-hero")
@@ -99,9 +102,15 @@ export default async function Home() {
 
           <div className="nav-actions">
             <ThemeToggle />
-            <Link href="/login" className="btn btn-outline-accent btn-sm">
-              Panel Gestión
-            </Link>
+            {enSesion ? (
+              <Link href="/admin" className="btn btn-outline-accent btn-sm">
+                Volver al panel
+              </Link>
+            ) : (
+              <Link href="/login" className="btn btn-outline-accent btn-sm">
+                Panel Gestión
+              </Link>
+            )}
           </div>
         </div>
       </header>
@@ -130,14 +139,26 @@ export default async function Home() {
             </div>
 
             <div className="hero-visual">
-              <div className="hero-card-showcase">
-                <div className="showcase-gradient">
-                  <MerakiMark className="meraki-svg-large" color="#F5F3F0" />
-                  <h3>MERAKI</h3>
-                  <p>TEATRO BAR</p>
-                  <span className="gold-tag">Producciones &amp; Alquileres</span>
+              {configuracion.imagen_logo_hero ? (
+                <div
+                  className="hero-logo-imagen"
+                  style={estiloPortada(
+                    configuracion.imagen_logo_hero,
+                    "meraki-logo",
+                  )}
+                  role="img"
+                  aria-label="Imagen principal de Meraki Teatrobar"
+                />
+              ) : (
+                <div className="hero-card-showcase">
+                  <div className="showcase-gradient">
+                    <MerakiMark className="meraki-svg-large" color="#F5F3F0" />
+                    <h3>MERAKI</h3>
+                    <p>TEATRO BAR</p>
+                    <span className="gold-tag">Producciones &amp; Alquileres</span>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </section>

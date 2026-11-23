@@ -154,11 +154,12 @@ export async function cambiarEstadoTarea(formData: FormData) {
 export async function actualizarPagina(formData: FormData) {
   const { supabase } = await requirePropietario()
 
-  const valores = {
+  const valores: Record<string, string | null> = {
     etiqueta_hero: campo(formData, 'etiqueta_hero') || CONFIGURACION_DEFAULT.etiqueta_hero,
     titulo_hero: campo(formData, 'titulo_hero') || CONFIGURACION_DEFAULT.titulo_hero,
     bajada_hero: campo(formData, 'bajada_hero') || CONFIGURACION_DEFAULT.bajada_hero,
     imagen_hero: opcional(formData, 'imagen_hero'),
+    imagen_logo_hero: opcional(formData, 'imagen_logo_hero'),
     correo: campo(formData, 'correo') || CONFIGURACION_DEFAULT.correo,
     telefono: campo(formData, 'telefono') || CONFIGURACION_DEFAULT.telefono,
     whatsapp: opcional(formData, 'whatsapp'),
@@ -176,10 +177,22 @@ export async function actualizarPagina(formData: FormData) {
     actualizado_en: new Date().toISOString(),
   }
 
-  const { error } = await supabase
+  let { error } = await supabase
     .from('configuracion_pagina')
     .update(valores)
     .eq('id', 1)
+
+  // Si todavía no se ejecutó el SQL que agrega la columna nueva, guarda el resto.
+  let avisoColumna = false
+  if (error && /imagen_logo_hero/i.test(error.message)) {
+    delete valores.imagen_logo_hero
+    const reintento = await supabase
+      .from('configuracion_pagina')
+      .update(valores)
+      .eq('id', 1)
+    error = reintento.error
+    avisoColumna = !error
+  }
 
   if (error) {
     redirect(`/admin/pagina?error=${encodeURIComponent(error.message)}`)
@@ -188,7 +201,11 @@ export async function actualizarPagina(formData: FormData) {
   revalidatePath('/')
   revalidatePath('/admin/pagina')
   revalidatePath('/admin')
-  redirect('/admin/pagina?guardado=1')
+  redirect(
+    avisoColumna
+      ? '/admin/pagina?guardado=1&aviso=columna'
+      : '/admin/pagina?guardado=1',
+  )
 }
 
 export async function eliminarEvento(formData: FormData) {

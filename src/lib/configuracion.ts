@@ -8,6 +8,7 @@ export const CONFIGURACION_DEFAULT: ConfiguracionPagina = {
   bajada_hero:
     'Estamos en la calle Ballivián #159, en Santa Cruz de la Sierra. Aquí puedes ver lo que está en cartelera y también los eventos que ya pasaron por la sala, propios o de terceros.',
   imagen_hero: null,
+  imagen_logo_hero: null,
   correo: 'merakiteatrobar@gmail.com',
   telefono: '+591 69253799',
   whatsapp: 'https://wa.me/59169253799',

@@ -90,6 +90,7 @@ create table if not exists public.configuracion_pagina (
   titulo_hero text not null default 'Escena en vivo y eventos culturales en Meraki Teatrobar.',
   bajada_hero text not null default 'Estamos en la calle Ballivián #159, en Santa Cruz de la Sierra. Aquí puedes ver lo que está en cartelera y también los eventos que ya pasaron por la sala, propios o de terceros.',
   imagen_hero text,
+  imagen_logo_hero text,
   correo text not null default 'merakiteatrobar@gmail.com',
   telefono text not null default '+591 69253799',
   whatsapp text default 'https://wa.me/59169253799',
@@ -110,6 +111,7 @@ alter table public.configuracion_pagina add column if not exists etiqueta_hero t
 alter table public.configuracion_pagina add column if not exists titulo_hero text;
 alter table public.configuracion_pagina add column if not exists bajada_hero text;
 alter table public.configuracion_pagina add column if not exists imagen_hero text;
+alter table public.configuracion_pagina add column if not exists imagen_logo_hero text;
 alter table public.configuracion_pagina add column if not exists correo text;
 alter table public.configuracion_pagina add column if not exists telefono text;
 alter table public.configuracion_pagina add column if not exists whatsapp text;

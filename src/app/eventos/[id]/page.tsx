@@ -17,7 +17,7 @@ export default async function DetalleEvento({ params }: Props) {
   const { id } = await params;
   const supabase = await createClient();
 
-  const [{ data }, configuracion] = await Promise.all([
+  const [{ data }, configuracion, { data: sesion }] = await Promise.all([
     supabase
       .from("eventos")
       .select("*")
@@ -25,6 +25,7 @@ export default async function DetalleEvento({ params }: Props) {
       .eq("estado_publicacion", "PUBLICADO")
       .single(),
     obtenerConfiguracion(),
+    supabase.auth.getUser(),
   ]);
 
   if (!data) notFound();
@@ -43,6 +44,11 @@ export default async function DetalleEvento({ params }: Props) {
             <Link href="/" className="btn btn-secondary btn-sm">
               ← Volver a la cartelera
             </Link>
+            {sesion.user && (
+              <Link href="/admin" className="btn btn-outline-accent btn-sm">
+                Volver al panel
+              </Link>
+            )}
           </div>
         </div>
       </header>
