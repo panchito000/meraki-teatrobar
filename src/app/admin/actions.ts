@@ -177,10 +177,11 @@ export async function actualizarPagina(formData: FormData) {
     actualizado_en: new Date().toISOString(),
   }
 
-  let { error } = await supabase
+  let { data: guardado, error } = await supabase
     .from('configuracion_pagina')
     .update(valores)
     .eq('id', 1)
+    .select('id')
 
   // Si todavía no se ejecutó el SQL que agrega la columna nueva, guarda el resto.
   let avisoColumna = false
@@ -190,12 +191,17 @@ export async function actualizarPagina(formData: FormData) {
       .from('configuracion_pagina')
       .update(valores)
       .eq('id', 1)
+      .select('id')
     error = reintento.error
+    guardado = reintento.data
     avisoColumna = !error
   }
 
   if (error) {
     redirect(`/admin/pagina?error=${encodeURIComponent(error.message)}`)
+  }
+  if (!guardado?.length) {
+    redirect('/admin/pagina?error=Falta%20ejecutar%20supabase%2Fsetup-imagenes.sql%20en%20Supabase.')
   }
 
   revalidatePath('/')
@@ -298,12 +304,23 @@ export async function actualizarMiPerfil(formData: FormData) {
 }
 
 export async function actualizarNombreUsuario(formData: FormData) {
-  const { supabase } = await requirePropietario()
+  const { supabase, user } = await requirePropietario()
   const id = campo(formData, 'id')
   const nombre = campo(formData, 'nombre')
 
   if (!id || !nombre) {
     redirect('/admin/usuarios?error=Datos%20incompletos.')
+  }
+
+  // Si es el propio propietario, el cambio se refleja aunque falte la política RLS.
+  const esPropio = id === user?.id
+  if (esPropio) {
+    const { error: errorAuth } = await supabase.auth.updateUser({
+      data: { nombre },
+    })
+    if (errorAuth) {
+      redirect(`/admin/usuarios?error=${encodeURIComponent(errorAuth.message)}`)
+    }
   }
 
   const { data, error } = await supabase
@@ -314,7 +331,7 @@ export async function actualizarNombreUsuario(formData: FormData) {
   if (error) {
     redirect(`/admin/usuarios?error=${encodeURIComponent(error.message)}`)
   }
-  if (!data?.length) {
+  if (!data?.length && !esPropio) {
     redirect('/admin/usuarios?error=Falta%20ejecutar%20supabase%2Fsetup-perfiles.sql%20en%20Supabase.')
   }
 

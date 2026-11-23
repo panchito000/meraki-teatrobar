@@ -15,7 +15,7 @@ type Props = {
 };
 
 export default async function Usuarios({ searchParams }: Props) {
-  const { supabase } = await requirePropietario();
+  const { supabase, user, nombre } = await requirePropietario();
   const [{ data }, params] = await Promise.all([
     supabase
       .from("usuarios")
@@ -24,7 +24,11 @@ export default async function Usuarios({ searchParams }: Props) {
     searchParams,
   ]);
 
-  const usuarios = (data ?? []) as Usuario[];
+  const usuarios = ((data ?? []) as Usuario[]).map((usuario) =>
+    usuario.id_usuario === user?.id
+      ? { ...usuario, nombre: nombre || usuario.nombre }
+      : usuario,
+  );
 
   return (
     <div style={{ maxWidth: "860px" }}>

@@ -142,10 +142,17 @@ export default async function Home() {
               {configuracion.imagen_logo_hero ? (
                 <div
                   className="hero-logo-imagen"
-                  style={estiloPortada(
-                    configuracion.imagen_logo_hero,
-                    "meraki-logo",
-                  )}
+                  style={{
+                    ...estiloPortada(
+                      configuracion.imagen_logo_hero,
+                      "meraki-logo",
+                    ),
+                    minHeight: 330,
+                    borderRadius: 15,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    backgroundRepeat: "no-repeat",
+                  }}
                   role="img"
                   aria-label="Imagen principal de Meraki Teatrobar"
                 />
