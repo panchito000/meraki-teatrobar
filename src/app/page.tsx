@@ -2,29 +2,11 @@ import Link from "next/link";
 
 import { MerakiLogo, MerakiMark } from "@/components/meraki-logo";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { obtenerConfiguracion } from "@/lib/configuracion";
 import { fechaDeHoy, formatearFecha } from "@/lib/formato";
 import { etiquetaPortada, estiloPortada } from "@/lib/portadas";
 import { createClient } from "@/lib/supabase/server";
 import type { Evento } from "@/lib/types";
-
-const contacto = {
-  correo: "merakiteatrobar@gmail.com",
-  telefono: "+591 69253799",
-  whatsapp: "https://wa.me/59169253799",
-  direccion:
-    "Calle Ballivián #159, entre La Paz y Chuquisaca, Santa Cruz de la Sierra, Bolivia",
-  mapas: "https://maps.app.goo.gl/eXNiPvjBESA97J1F9",
-};
-
-const redes = [
-  { nombre: "Instagram", href: "https://www.instagram.com/merakiteatrobar/" },
-  { nombre: "TikTok", href: "https://www.tiktok.com/@merakiteatro" },
-  { nombre: "Facebook", href: "https://www.facebook.com/merakiteatrobar" },
-  {
-    nombre: "Discos en la oscuridad",
-    href: "https://www.instagram.com/discosenlaoscuridad/",
-  },
-];
 
 function TarjetaEvento({ evento }: { evento: Evento }) {
   return (
@@ -73,11 +55,21 @@ function TarjetaEvento({ evento }: { evento: Evento }) {
 
 export default async function Home() {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("eventos")
-    .select("*")
-    .eq("estado_publicacion", "PUBLICADO")
-    .order("fecha", { ascending: true });
+  const [{ data, error }, configuracion] = await Promise.all([
+    supabase
+      .from("eventos")
+      .select("*")
+      .eq("estado_publicacion", "PUBLICADO")
+      .order("fecha", { ascending: true }),
+    obtenerConfiguracion(),
+  ]);
+
+  const redes = [
+    { nombre: "Instagram", href: configuracion.instagram },
+    { nombre: "TikTok", href: configuracion.tiktok },
+    { nombre: "Facebook", href: configuracion.facebook },
+    { nombre: "Discos en la oscuridad", href: configuracion.discos },
+  ].filter((red): red is { nombre: string; href: string } => Boolean(red.href));
 
   const eventos = (data ?? []) as Evento[];
   const hoy = fechaDeHoy();
@@ -115,17 +107,9 @@ export default async function Home() {
           <div className="hero-glow" />
           <div className="wrap hero-grid">
             <div className="hero-content">
-              <span className="badge-pill">
-                Música + Teatro + Comedia + Danza + Poesía
-              </span>
-              <h1>
-                Escena en vivo y eventos culturales en Meraki Teatrobar.
-              </h1>
-              <p>
-                Estamos en la calle Ballivián #159, en Santa Cruz de la Sierra.
-                Aquí puedes ver lo que está en cartelera y también los eventos
-                que ya pasaron por la sala, propios o de terceros.
-              </p>
+              <span className="badge-pill">{configuracion.etiqueta_hero}</span>
+              <h1>{configuracion.titulo_hero}</h1>
+              <p>{configuracion.bajada_hero}</p>
               <div className="hero-buttons">
                 <a href="#eventos" className="btn btn-primary">
                   Ver Eventos Publicados
@@ -138,7 +122,10 @@ export default async function Home() {
 
             <div className="hero-visual">
               <div className="hero-card-showcase">
-                <div className="showcase-gradient">
+                <div
+                  className={`showcase-gradient ${configuracion.imagen_hero ? "con-imagen" : ""}`}
+                  style={estiloPortada(configuracion.imagen_hero, "meraki-hero")}
+                >
                   <MerakiMark className="meraki-svg-large" color="#F5F3F0" />
                   <h3>MERAKI</h3>
                   <p>TEATRO BAR</p>
@@ -249,7 +236,7 @@ export default async function Home() {
               <h3>Información General del Establecimiento</h3>
               <ul className="info-list">
                 <li>
-                  <span>📍 Dirección:</span> {contacto.direccion}
+                  <span>📍 Dirección:</span> {configuracion.direccion}
                 </li>
                 <li>
                   <span>🎭 Programación:</span> Música, teatro, comedia, danza
@@ -285,32 +272,38 @@ export default async function Home() {
               <div className="contact-channels">
                 <div className="channel-card">
                   <span className="channel-label">Correo electrónico</span>
-                  <a href={`mailto:${contacto.correo}`} className="link-btn">
-                    {contacto.correo}
+                  <a href={`mailto:${configuracion.correo}`} className="link-btn">
+                    {configuracion.correo}
                   </a>
                 </div>
                 <div className="channel-card">
                   <span className="channel-label">WhatsApp</span>
-                  <a
-                    href={contacto.whatsapp}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="link-btn"
-                  >
-                    {contacto.telefono}
-                  </a>
+                  {configuracion.whatsapp ? (
+                    <a
+                      href={configuracion.whatsapp}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="link-btn"
+                    >
+                      {configuracion.telefono}
+                    </a>
+                  ) : (
+                    <strong>{configuracion.telefono}</strong>
+                  )}
                 </div>
                 <div className="channel-card">
                   <span className="channel-label">Dirección</span>
-                  <strong>{contacto.direccion}</strong>
-                  <a
-                    href={contacto.mapas}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="link-btn"
-                  >
-                    Ver en Google Maps
-                  </a>
+                  <strong>{configuracion.direccion}</strong>
+                  {configuracion.mapas && (
+                    <a
+                      href={configuracion.mapas}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="link-btn"
+                    >
+                      Ver en Google Maps
+                    </a>
+                  )}
                 </div>
                 <div className="social-row">
                   {redes.map((red) => (
@@ -334,8 +327,7 @@ export default async function Home() {
       <footer className="public-footer">
         <div className="wrap footer-flex">
           <div>
-            <strong>Meraki Teatrobar</strong> — Calle Ballivián #159, Santa Cruz
-            de la Sierra
+            <strong>Meraki Teatrobar</strong> — {configuracion.direccion}
           </div>
           <Link href="/login" className="link-btn">
             Iniciar sesión en el panel

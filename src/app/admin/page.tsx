@@ -69,6 +69,9 @@ export default async function Panel() {
               <Link href="/admin/tareas/nueva" className="btn btn-secondary btn-sm">
                 + Nueva Tarea
               </Link>
+              <Link href="/admin/pagina" className="btn btn-outline-accent btn-sm">
+                🖼️ Editar página
+              </Link>
             </>
           ) : (
             <span className="badge-pill">Solo lectura</span>

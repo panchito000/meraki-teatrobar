@@ -38,11 +38,15 @@ function portadaPorSemilla(semilla: string) {
   return PORTADAS[suma % PORTADAS.length];
 }
 
+export function esImagenUrl(valor?: string | null) {
+  return Boolean(valor && /^(https?:\/\/|\/|data:image\/)/i.test(valor));
+}
+
 export function estiloPortada(
   imagen: string | null | undefined,
   semilla = "",
 ): CSSProperties {
-  if (imagen && /^(https?:\/\/|\/|data:image\/)/i.test(imagen)) {
+  if (esImagenUrl(imagen)) {
     return { backgroundImage: `url("${imagen}")` };
   }
   if (imagen && PORTADAS.some((portada) => portada.id === imagen)) {
@@ -58,7 +62,7 @@ export function etiquetaPortada(
   if (imagen && PORTADAS.some((portada) => portada.id === imagen)) {
     return portadaPorId(imagen).etiquetaCorta;
   }
-  if (imagen && /^(https?:\/\/|\/|data:image\/)/i.test(imagen)) {
+  if (esImagenUrl(imagen)) {
     return "Imagen del evento";
   }
   return portadaPorSemilla(semilla).etiquetaCorta;

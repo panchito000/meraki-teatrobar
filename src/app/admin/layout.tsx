@@ -30,7 +30,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           </div>
         </div>
 
-        <AdminNav />
+        <AdminNav esPropietario={esPropietario} />
 
         <div className="sidebar-footer">
           <Link href="/" className="nav-item">

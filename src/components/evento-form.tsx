@@ -1,5 +1,6 @@
-import type { Evento } from "@/lib/types";
+import { SubidorImagen } from "@/components/subidor-imagen";
 import { PORTADAS } from "@/lib/portadas";
+import type { Evento } from "@/lib/types";
 
 type Props = {
   action: (formData: FormData) => void | Promise<void>;
@@ -61,7 +62,7 @@ export function EventoForm({ action, evento, textoBoton }: Props) {
       </div>
 
       <div className="form-group">
-        <label>Imagen o portada (selección visual)</label>
+        <label>Portada de respaldo (si no subes imagen)</label>
         <div className="cover-presets">
           {PORTADAS.map((portada) => (
             <label
@@ -84,27 +85,23 @@ export function EventoForm({ action, evento, textoBoton }: Props) {
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "0.8rem" }}>
-        <div className="form-group">
-          <label htmlFor="imagen_url">URL de imagen propia (opcional)</label>
-          <input
-            id="imagen_url"
-            name="imagen_url"
-            type="url"
-            defaultValue={evento?.imagen?.startsWith("http") ? evento.imagen : ""}
-            placeholder="https://..."
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="enlace_entradas">Enlace externo para entradas (opcional)</label>
-          <input
-            id="enlace_entradas"
-            name="enlace_entradas"
-            type="url"
-            defaultValue={evento?.enlace_entradas ?? ""}
-            placeholder="https://..."
-          />
-        </div>
+      <SubidorImagen
+        name="imagen_url"
+        value={evento?.imagen ?? null}
+        carpeta="eventos"
+        etiqueta="Imagen del evento (tiene prioridad sobre la portada)"
+        ayuda="La imagen subida se usa en la tarjeta y en el detalle del evento. Si la quitas, se usa la portada de respaldo."
+      />
+
+      <div className="form-group">
+        <label htmlFor="enlace_entradas">Enlace externo para entradas (opcional)</label>
+        <input
+          id="enlace_entradas"
+          name="enlace_entradas"
+          type="url"
+          defaultValue={evento?.enlace_entradas ?? ""}
+          placeholder="https://..."
+        />
       </div>
 
       <div className="form-group">

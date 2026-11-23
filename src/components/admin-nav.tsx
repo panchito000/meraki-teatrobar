@@ -9,12 +9,16 @@ const ENLACES = [
   { href: "/admin/tareas", etiqueta: "📣 Tareas Promocionales" },
 ];
 
-export function AdminNav() {
+export function AdminNav({ esPropietario = false }: { esPropietario?: boolean }) {
   const ruta = usePathname();
+
+  const enlaces = esPropietario
+    ? [...ENLACES, { href: "/admin/pagina", etiqueta: "🖼️ Página e Imágenes" }]
+    : ENLACES;
 
   return (
     <nav className="sidebar-nav">
-      {ENLACES.map((enlace) => {
+      {enlaces.map((enlace) => {
         const activo =
           enlace.href === "/admin"
             ? ruta === "/admin"

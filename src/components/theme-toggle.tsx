@@ -8,7 +8,7 @@ export function ThemeToggle() {
   useEffect(() => {
     const tema = localStorage.getItem("meraki_tema") ?? "dark";
     document.documentElement.dataset.theme = tema;
-    setIcono(tema === "dark" ? "☀️" : "🌙");
+    requestAnimationFrame(() => setIcono(tema === "dark" ? "☀️" : "🌙"));
   }, []);
 
   function alternar() {

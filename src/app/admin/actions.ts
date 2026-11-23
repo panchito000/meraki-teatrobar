@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 import { requirePropietario, requireUsuario } from '@/lib/auth'
+import { CONFIGURACION_DEFAULT } from '@/lib/configuracion'
 
 const ESTADOS_EVENTO = ['BORRADOR', 'PUBLICADO', 'OCULTO'] as const
 const ESTADOS_TAREA = [
@@ -148,4 +149,39 @@ export async function cambiarEstadoTarea(formData: FormData) {
 
   revalidatePath('/admin')
   revalidatePath('/admin/tareas')
+}
+
+export async function actualizarPagina(formData: FormData) {
+  const { supabase } = await requirePropietario()
+
+  const valores = {
+    etiqueta_hero: campo(formData, 'etiqueta_hero') || CONFIGURACION_DEFAULT.etiqueta_hero,
+    titulo_hero: campo(formData, 'titulo_hero') || CONFIGURACION_DEFAULT.titulo_hero,
+    bajada_hero: campo(formData, 'bajada_hero') || CONFIGURACION_DEFAULT.bajada_hero,
+    imagen_hero: opcional(formData, 'imagen_hero'),
+    correo: campo(formData, 'correo') || CONFIGURACION_DEFAULT.correo,
+    telefono: campo(formData, 'telefono') || CONFIGURACION_DEFAULT.telefono,
+    whatsapp: opcional(formData, 'whatsapp'),
+    direccion: opcional(formData, 'direccion'),
+    mapas: opcional(formData, 'mapas'),
+    instagram: opcional(formData, 'instagram'),
+    tiktok: opcional(formData, 'tiktok'),
+    facebook: opcional(formData, 'facebook'),
+    discos: opcional(formData, 'discos'),
+    actualizado_en: new Date().toISOString(),
+  }
+
+  const { error } = await supabase
+    .from('configuracion_pagina')
+    .update(valores)
+    .eq('id', 1)
+
+  if (error) {
+    redirect(`/admin/pagina?error=${encodeURIComponent(error.message)}`)
+  }
+
+  revalidatePath('/')
+  revalidatePath('/admin/pagina')
+  revalidatePath('/admin')
+  redirect('/admin/pagina?guardado=1')
 }

@@ -1,5 +1,16 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Configuración de imágenes (una sola vez)
+
+Ejecuta `supabase/setup-imagenes.sql` en **Supabase → SQL Editor → New query → Run**.
+Crea el bucket público `imagenes`, sus políticas RLS y la tabla `configuracion_pagina`.
+Después de eso, el propietario puede subir imágenes desde:
+
+- **Panel → 🖼️ Página e Imágenes**: imagen de presentación del hero, textos y datos de contacto.
+- **Gestión de Eventos → Nuevo/Editar**: imagen de portada de cada evento.
+
+La administradora solo puede ver el sitio y el panel; no ve esas opciones de edición.
+
 ## Getting Started
 
 First, run the development server:

@@ -221,6 +221,58 @@ h1, h2, h3, h4, .brand-title {
   cursor: not-allowed;
   background: var(--bg-elevated);
 }
+.field-help {
+  display: block;
+  margin-top: 0.45rem;
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+.form-grid-dos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 0.9rem;
+}
+.form-section-title {
+  margin: 1.6rem 0 0.9rem;
+  font-size: 1rem;
+  color: var(--accent-gold);
+  letter-spacing: 0.02em;
+}
+.alert-box {
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  margin-top: 1.15rem;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+}
+.alert-box.success { border-color: rgba(16, 185, 129, 0.5); color: #10b981; }
+.alert-box.error { border-color: rgba(239, 68, 68, 0.5); color: #ef4444; }
+.image-upload-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 0.55rem 0;
+}
+.image-upload-actions input[type="file"] {
+  width: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+.image-preview {
+  margin-top: 0.6rem;
+  min-height: 130px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background-size: cover;
+  background-position: center;
+}
 
 /* Logotipo */
 .brand-logo {
@@ -309,10 +361,24 @@ h1, h2, h3, h4, .brand-title {
 }
 .showcase-gradient {
   background: linear-gradient(155deg, #d90368 0%, #5e0b4c 100%);
+  background-size: cover;
+  background-position: center;
   border-radius: 15px;
   padding: 2.3rem 1.75rem;
   text-align: center;
   color: #f5f3f0;
+  position: relative;
+  overflow: hidden;
+}
+.showcase-gradient.con-imagen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(13, 9, 14, 0.5);
+}
+.showcase-gradient.con-imagen > * {
+  position: relative;
+  z-index: 1;
 }
 .meraki-svg-large { width: 96px; height: 96px; margin-bottom: 0.4rem; }
 .showcase-gradient h3 { font-size: 1.8rem; letter-spacing: 0.22em; }
@@ -730,4 +796,5 @@ h1, h2, h3, h4, .brand-title {
 @media (max-width: 640px) {
   .public-nav { display: none; }
   .cover-presets { grid-template-columns: 1fr; }
+  .form-grid-dos { grid-template-columns: 1fr; }
 }

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { MerakiLogo } from "@/components/meraki-logo";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { obtenerConfiguracion } from "@/lib/configuracion";
 import { formatearFecha } from "@/lib/formato";
 import { etiquetaPortada, estiloPortada } from "@/lib/portadas";
 import { createClient } from "@/lib/supabase/server";
@@ -16,12 +17,15 @@ export default async function DetalleEvento({ params }: Props) {
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data } = await supabase
-    .from("eventos")
-    .select("*")
-    .eq("id_evento", id)
-    .eq("estado_publicacion", "PUBLICADO")
-    .single();
+  const [{ data }, configuracion] = await Promise.all([
+    supabase
+      .from("eventos")
+      .select("*")
+      .eq("id_evento", id)
+      .eq("estado_publicacion", "PUBLICADO")
+      .single(),
+    obtenerConfiguracion(),
+  ]);
 
   if (!data) notFound();
 
@@ -125,8 +129,7 @@ export default async function DetalleEvento({ params }: Props) {
       <footer className="public-footer">
         <div className="wrap footer-flex">
           <div>
-            <strong>Meraki Teatrobar</strong> — Calle Ballivián #159, Santa Cruz
-            de la Sierra
+            <strong>Meraki Teatrobar</strong> — {configuracion.direccion}
           </div>
           <Link href="/login" className="link-btn">
             Iniciar sesión en el panel
