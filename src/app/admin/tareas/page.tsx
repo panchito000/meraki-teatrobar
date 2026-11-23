@@ -1,10 +1,11 @@
 import Link from "next/link";
 
+import { BotonEliminar } from "@/components/boton-eliminar";
 import { StatusBadge } from "@/components/status-badge";
 import { requireUsuario } from "@/lib/auth";
 import { formatearFecha } from "@/lib/formato";
 import type { EstadoTarea, Tarea } from "@/lib/types";
-import { cambiarEstadoTarea } from "../actions";
+import { cambiarEstadoTarea, eliminarTarea } from "../actions";
 
 type TareaConEvento = Tarea & { eventos: { titulo: string } | null };
 
@@ -16,13 +17,20 @@ const ESTADOS: EstadoTarea[] = [
 ];
 
 type Props = {
-  searchParams: Promise<{ q?: string; estado?: string; tipo?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    estado?: string;
+    tipo?: string;
+    eliminado?: string;
+    error?: string;
+  }>;
 };
 
 export default async function TareasAdmin({ searchParams }: Props) {
   const { supabase, rol } = await requireUsuario();
   const esPropietario = rol === "PROPIETARIO";
-  const { q = "", estado = "ALL", tipo = "ALL" } = await searchParams;
+  const { q = "", estado = "ALL", tipo = "ALL", eliminado, error } =
+    await searchParams;
 
   const { data } = await supabase
     .from("tareas_promocionales")
@@ -56,6 +64,11 @@ export default async function TareasAdmin({ searchParams }: Props) {
           </Link>
         )}
       </div>
+
+      {eliminado && (
+        <div className="alert-box success">✅ Tarea eliminada correctamente.</div>
+      )}
+      {error && <div className="alert-box error">⚠️ {error}</div>}
 
       <form className="filters-bar" method="GET">
         <input
@@ -107,24 +120,31 @@ export default async function TareasAdmin({ searchParams }: Props) {
               </div>
               <div className="task-controls">
                 {esPropietario ? (
-                  <form action={cambiarEstadoTarea} style={{ display: "flex", gap: "0.5rem" }}>
-                    <input type="hidden" name="id" value={tarea.id_tarea} />
-                    <select
-                      name="estado"
-                      defaultValue={tarea.estado}
-                      className="task-status-select"
-                      aria-label="Cambiar estado de tarea"
-                    >
-                      {ESTADOS.map((estadoTarea) => (
-                        <option key={estadoTarea} value={estadoTarea}>
-                          {estadoTarea === "EN_PROGRESO" ? "En progreso" : estadoTarea === "PENDIENTE" ? "Pendiente" : estadoTarea === "COMPLETADA" ? "Completada" : "Cancelada"}
-                        </option>
-                      ))}
-                    </select>
-                    <button type="submit" className="btn btn-secondary btn-sm">
-                      Actualizar
-                    </button>
-                  </form>
+                  <>
+                    <form action={cambiarEstadoTarea} style={{ display: "flex", gap: "0.5rem" }}>
+                      <input type="hidden" name="id" value={tarea.id_tarea} />
+                      <select
+                        name="estado"
+                        defaultValue={tarea.estado}
+                        className="task-status-select"
+                        aria-label="Cambiar estado de tarea"
+                      >
+                        {ESTADOS.map((estadoTarea) => (
+                          <option key={estadoTarea} value={estadoTarea}>
+                            {estadoTarea === "EN_PROGRESO" ? "En progreso" : estadoTarea === "PENDIENTE" ? "Pendiente" : estadoTarea === "COMPLETADA" ? "Completada" : "Cancelada"}
+                          </option>
+                        ))}
+                      </select>
+                      <button type="submit" className="btn btn-secondary btn-sm">
+                        Actualizar
+                      </button>
+                    </form>
+                    <BotonEliminar
+                      action={eliminarTarea}
+                      id={tarea.id_tarea}
+                      nombre={tarea.titulo}
+                    />
+                  </>
                 ) : (
                   <StatusBadge estado={tarea.estado} />
                 )}

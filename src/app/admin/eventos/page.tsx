@@ -1,22 +1,28 @@
 import Link from "next/link";
 
+import { BotonEliminar } from "@/components/boton-eliminar";
 import { StatusBadge } from "@/components/status-badge";
 import { requireUsuario } from "@/lib/auth";
 import { formatearFecha } from "@/lib/formato";
 import { estiloPortada } from "@/lib/portadas";
 import type { EstadoEvento, Evento } from "@/lib/types";
-import { cambiarEstadoEvento } from "../actions";
+import { cambiarEstadoEvento, eliminarEvento } from "../actions";
 
 const ESTADOS: EstadoEvento[] = ["BORRADOR", "PUBLICADO", "OCULTO"];
 
 type Props = {
-  searchParams: Promise<{ q?: string; estado?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    estado?: string;
+    eliminado?: string;
+    error?: string;
+  }>;
 };
 
 export default async function EventosAdmin({ searchParams }: Props) {
   const { supabase, rol } = await requireUsuario();
   const esPropietario = rol === "PROPIETARIO";
-  const { q = "", estado = "ALL" } = await searchParams;
+  const { q = "", estado = "ALL", eliminado, error } = await searchParams;
 
   const { data } = await supabase
     .from("eventos")
@@ -49,6 +55,11 @@ export default async function EventosAdmin({ searchParams }: Props) {
           </Link>
         )}
       </div>
+
+      {eliminado && (
+        <div className="alert-box success">✅ Evento eliminado correctamente.</div>
+      )}
+      {error && <div className="alert-box error">⚠️ {error}</div>}
 
       <form className="filters-bar" method="GET">
         <input
@@ -131,6 +142,12 @@ export default async function EventosAdmin({ searchParams }: Props) {
                           </form>
                         ),
                       )}
+                      <BotonEliminar
+                        action={eliminarEvento}
+                        id={evento.id_evento}
+                        nombre={evento.titulo}
+                        mensaje={`¿Eliminar el evento "${evento.titulo}"? Sus tareas asociadas quedarán como tareas generales. Esta acción no se puede deshacer.`}
+                      />
                     </>
                   )}
                 </div>

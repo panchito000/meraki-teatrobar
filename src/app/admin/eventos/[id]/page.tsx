@@ -1,18 +1,21 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { BotonEliminar } from "@/components/boton-eliminar";
 import { StatusBadge } from "@/components/status-badge";
 import { requireUsuario } from "@/lib/auth";
 import { formatearFecha } from "@/lib/formato";
 import { etiquetaPortada, estiloPortada } from "@/lib/portadas";
 import type { Evento } from "@/lib/types";
+import { eliminarEvento } from "../../actions";
 
 type Props = {
   params: Promise<{ id: string }>;
 };
 
 export default async function DetalleAdminEvento({ params }: Props) {
-  const { supabase } = await requireUsuario();
+  const { supabase, rol } = await requireUsuario();
+  const esPropietario = rol === "PROPIETARIO";
   const { id } = await params;
 
   const { data } = await supabase
@@ -40,6 +43,22 @@ export default async function DetalleAdminEvento({ params }: Props) {
           <h1>Detalle del Evento</h1>
           <p className="subtitle">Información registrada en el sistema.</p>
         </div>
+        {esPropietario && (
+          <div className="topbar-actions">
+            <Link
+              href={`/admin/eventos/${evento.id_evento}/editar`}
+              className="btn btn-gold btn-sm"
+            >
+              Editar
+            </Link>
+            <BotonEliminar
+              action={eliminarEvento}
+              id={evento.id_evento}
+              nombre={evento.titulo}
+              mensaje={`¿Eliminar el evento "${evento.titulo}"? Sus tareas asociadas quedarán como tareas generales. Esta acción no se puede deshacer.`}
+            />
+          </div>
+        )}
       </div>
 
       <div

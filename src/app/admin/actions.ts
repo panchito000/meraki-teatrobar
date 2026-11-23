@@ -191,6 +191,57 @@ export async function actualizarPagina(formData: FormData) {
   redirect('/admin/pagina?guardado=1')
 }
 
+export async function eliminarEvento(formData: FormData) {
+  const { supabase } = await requirePropietario()
+  const id = campo(formData, 'id')
+  if (!id) redirect('/admin/eventos?error=Datos%20incompletos.')
+
+  // Desvincula tareas antes de borrar el evento para no dejar referencias rotas.
+  await supabase
+    .from('tareas_promocionales')
+    .update({ id_evento: null })
+    .eq('id_evento', id)
+
+  const { data, error } = await supabase
+    .from('eventos')
+    .delete()
+    .eq('id_evento', id)
+    .select('id_evento')
+  if (error) {
+    redirect(`/admin/eventos?error=${encodeURIComponent(error.message)}`)
+  }
+  if (!data?.length) {
+    redirect('/admin/eventos?error=No%20se%20pudo%20eliminar%20el%20evento.')
+  }
+
+  revalidatePath('/admin')
+  revalidatePath('/admin/eventos')
+  revalidatePath('/')
+  redirect('/admin/eventos?eliminado=1')
+}
+
+export async function eliminarTarea(formData: FormData) {
+  const { supabase } = await requirePropietario()
+  const id = campo(formData, 'id')
+  if (!id) redirect('/admin/tareas?error=Datos%20incompletos.')
+
+  const { data, error } = await supabase
+    .from('tareas_promocionales')
+    .delete()
+    .eq('id_tarea', id)
+    .select('id_tarea')
+  if (error) {
+    redirect(`/admin/tareas?error=${encodeURIComponent(error.message)}`)
+  }
+  if (!data?.length) {
+    redirect('/admin/tareas?error=No%20se%20pudo%20eliminar%20la%20tarea.')
+  }
+
+  revalidatePath('/admin')
+  revalidatePath('/admin/tareas')
+  redirect('/admin/tareas?eliminado=1')
+}
+
 export async function actualizarMiPerfil(formData: FormData) {
   const { supabase, user } = await requireUsuario()
   if (!user) redirect('/login')
