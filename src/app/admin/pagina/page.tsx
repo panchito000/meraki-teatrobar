@@ -97,8 +97,8 @@ export default async function EditarPagina({ searchParams }: Props) {
           name="imagen_hero"
           value={configuracion.imagen_hero}
           carpeta="sitio"
-          etiqueta="Imagen de presentación de la portada"
-          ayuda="Si subes una imagen, se muestra en el panel derecho del hero. Si la quitas, vuelve el diseño de gradiente Meraki."
+          etiqueta="Imagen de fondo de la portada (detrás del texto)"
+          ayuda="La imagen cubre todo el hero, detrás del título y los botones. Se aplica un velo oscuro para que el texto se lea bien. Si la quitas, vuelve el fondo de gradiente Meraki."
         />
 
         <h3 className="form-section-title">Contacto</h3>

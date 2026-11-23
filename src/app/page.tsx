@@ -64,6 +64,10 @@ export default async function Home() {
     obtenerConfiguracion(),
   ]);
 
+  const fondoHero = configuracion.imagen_hero
+    ? estiloPortada(configuracion.imagen_hero, "meraki-hero")
+    : undefined;
+
   const redes = [
     { nombre: "Instagram", href: configuracion.instagram },
     { nombre: "TikTok", href: configuracion.tiktok },
@@ -103,8 +107,13 @@ export default async function Home() {
       </header>
 
       <main>
-        <section id="inicio" className="hero-section">
+        <section
+          id="inicio"
+          className={`hero-section ${configuracion.imagen_hero ? "con-fondo-imagen" : ""}`}
+          style={fondoHero}
+        >
           <div className="hero-glow" />
+          {configuracion.imagen_hero && <div className="hero-overlay" />}
           <div className="wrap hero-grid">
             <div className="hero-content">
               <span className="badge-pill">{configuracion.etiqueta_hero}</span>
@@ -122,10 +131,7 @@ export default async function Home() {
 
             <div className="hero-visual">
               <div className="hero-card-showcase">
-                <div
-                  className={`showcase-gradient ${configuracion.imagen_hero ? "con-imagen" : ""}`}
-                  style={estiloPortada(configuracion.imagen_hero, "meraki-hero")}
-                >
+                <div className="showcase-gradient">
                   <MerakiMark className="meraki-svg-large" color="#F5F3F0" />
                   <h3>MERAKI</h3>
                   <p>TEATRO BAR</p>
