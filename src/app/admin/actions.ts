@@ -207,20 +207,20 @@ export async function actualizarMiPerfil(formData: FormData) {
     redirect('/admin/perfil?error=La%20contrase%C3%B1a%20debe%20tener%20al%20menos%208%20caracteres.')
   }
 
-  const { error } = await supabase
+  const { error: errorAuth } = await supabase.auth.updateUser({
+    data: { nombre },
+    ...(password ? { password } : {}),
+  })
+  if (errorAuth) {
+    redirect(`/admin/perfil?error=${encodeURIComponent(errorAuth.message)}`)
+  }
+
+  // Si la política RLS de perfiles ya está aplicada, esto sincroniza la tabla.
+  // Si no, el nombre visible sigue funcionando desde el perfil de Auth.
+  await supabase
     .from('usuarios')
     .update({ nombre })
     .eq('id_usuario', user.id)
-  if (error) {
-    redirect(`/admin/perfil?error=${encodeURIComponent(error.message)}`)
-  }
-
-  if (password) {
-    const { error: errorAuth } = await supabase.auth.updateUser({ password })
-    if (errorAuth) {
-      redirect(`/admin/perfil?error=${encodeURIComponent(errorAuth.message)}`)
-    }
-  }
 
   revalidatePath('/admin')
   revalidatePath('/admin/perfil')
@@ -238,12 +238,16 @@ export async function actualizarNombreUsuario(formData: FormData) {
     redirect('/admin/usuarios?error=Datos%20incompletos.')
   }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('usuarios')
     .update({ nombre })
     .eq('id_usuario', id)
+    .select('id_usuario')
   if (error) {
     redirect(`/admin/usuarios?error=${encodeURIComponent(error.message)}`)
+  }
+  if (!data?.length) {
+    redirect('/admin/usuarios?error=Falta%20ejecutar%20supabase%2Fsetup-perfiles.sql%20en%20Supabase.')
   }
 
   revalidatePath('/admin')

@@ -62,6 +62,9 @@ export default async function MiPerfil({ searchParams }: Props) {
             defaultValue={nombreActual}
             placeholder="Nombre que aparece en el panel"
           />
+          <small className="field-help">
+            Este nombre se guarda en tu perfil de acceso y se muestra en el panel.
+          </small>
         </div>
 
         <h3 className="form-section-title">Cambiar contraseña (opcional)</h3>

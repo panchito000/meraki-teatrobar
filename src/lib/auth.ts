@@ -20,11 +20,16 @@ export async function getSesion() {
     .eq('id_usuario', user.id)
     .single()
 
+  const nombreMeta =
+    typeof user.user_metadata?.nombre === 'string'
+      ? user.user_metadata.nombre.trim()
+      : ''
+
   return {
     supabase,
     user,
     rol: (perfil?.rol as Rol) ?? null,
-    nombre: perfil?.nombre ?? user.email ?? '',
+    nombre: nombreMeta || perfil?.nombre || user.email || '',
   }
 }
 
