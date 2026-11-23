@@ -22,6 +22,17 @@ function opcional(formData: FormData, nombre: string) {
   return valor === '' ? null : valor
 }
 
+function imagenEvento(formData: FormData) {
+  return opcional(formData, 'imagen_url') ?? opcional(formData, 'imagen')
+}
+
+function estadoEvento(formData: FormData) {
+  const valor = campo(formData, 'estado_publicacion') || 'BORRADOR'
+  return ESTADOS_EVENTO.includes(valor as (typeof ESTADOS_EVENTO)[number])
+    ? valor
+    : 'BORRADOR'
+}
+
 export async function cerrarSesion() {
   const { supabase } = await requireUsuario()
   await supabase.auth.signOut()
@@ -40,11 +51,13 @@ export async function crearEvento(formData: FormData) {
     descripcion: campo(formData, 'descripcion'),
     fecha,
     organizador: campo(formData, 'organizador'),
-    imagen: opcional(formData, 'imagen'),
+    imagen: imagenEvento(formData),
     enlace_entradas: opcional(formData, 'enlace_entradas'),
+    estado_publicacion: estadoEvento(formData),
   })
   if (error) throw new Error(error.message)
 
+  revalidatePath('/admin')
   revalidatePath('/admin/eventos')
   revalidatePath('/')
   redirect('/admin/eventos')
@@ -65,14 +78,17 @@ export async function actualizarEvento(formData: FormData) {
       descripcion: campo(formData, 'descripcion'),
       fecha,
       organizador: campo(formData, 'organizador'),
-      imagen: opcional(formData, 'imagen'),
+      imagen: imagenEvento(formData),
       enlace_entradas: opcional(formData, 'enlace_entradas'),
+      estado_publicacion: estadoEvento(formData),
     })
     .eq('id_evento', id)
   if (error) throw new Error(error.message)
 
+  revalidatePath('/admin')
   revalidatePath('/admin/eventos')
   revalidatePath('/')
+  revalidatePath(`/eventos/${id}`)
   redirect('/admin/eventos')
 }
 
@@ -90,6 +106,7 @@ export async function cambiarEstadoEvento(formData: FormData) {
     .eq('id_evento', id)
   if (error) throw new Error(error.message)
 
+  revalidatePath('/admin')
   revalidatePath('/admin/eventos')
   revalidatePath('/')
 }
@@ -110,6 +127,7 @@ export async function crearTarea(formData: FormData) {
   })
   if (error) throw new Error(error.message)
 
+  revalidatePath('/admin')
   revalidatePath('/admin/tareas')
   redirect('/admin/tareas')
 }
@@ -128,5 +146,6 @@ export async function cambiarEstadoTarea(formData: FormData) {
     .eq('id_tarea', id)
   if (error) throw new Error(error.message)
 
+  revalidatePath('/admin')
   revalidatePath('/admin/tareas')
 }

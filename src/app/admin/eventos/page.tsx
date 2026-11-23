@@ -1,109 +1,144 @@
-import Link from 'next/link'
+import Link from "next/link";
 
-import { requireUsuario } from '@/lib/auth'
-import type { Evento, EstadoEvento } from '@/lib/types'
-import { cambiarEstadoEvento } from '../actions'
+import { StatusBadge } from "@/components/status-badge";
+import { requireUsuario } from "@/lib/auth";
+import { formatearFecha } from "@/lib/formato";
+import { estiloPortada } from "@/lib/portadas";
+import type { EstadoEvento, Evento } from "@/lib/types";
+import { cambiarEstadoEvento } from "../actions";
 
-const estados: EstadoEvento[] = ['BORRADOR', 'PUBLICADO', 'OCULTO']
+const ESTADOS: EstadoEvento[] = ["BORRADOR", "PUBLICADO", "OCULTO"];
 
-export default async function EventosAdmin() {
-  const { supabase, rol } = await requireUsuario()
-  const esPropietario = rol === 'PROPIETARIO'
+type Props = {
+  searchParams: Promise<{ q?: string; estado?: string }>;
+};
+
+export default async function EventosAdmin({ searchParams }: Props) {
+  const { supabase, rol } = await requireUsuario();
+  const esPropietario = rol === "PROPIETARIO";
+  const { q = "", estado = "ALL" } = await searchParams;
 
   const { data } = await supabase
-    .from('eventos')
-    .select('*')
-    .order('fecha', { ascending: false })
+    .from("eventos")
+    .select("*")
+    .order("fecha", { ascending: false });
 
-  const eventos = (data ?? []) as Evento[]
+  const consulta = q.trim().toLowerCase();
+  const eventos = ((data ?? []) as Evento[]).filter((evento) => {
+    const coincideEstado = estado === "ALL" || evento.estado_publicacion === estado;
+    const coincideTexto =
+      !consulta ||
+      evento.titulo.toLowerCase().includes(consulta) ||
+      evento.organizador.toLowerCase().includes(consulta) ||
+      evento.descripcion.toLowerCase().includes(consulta);
+    return coincideEstado && coincideTexto;
+  });
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="admin-topbar">
         <div>
-          <p className="text-sm tracking-[0.25em] text-fuchsia-400">EVENTOS</p>
-          <h1 className="mt-2 text-3xl font-semibold">Eventos registrados</h1>
+          <h1>Gestión de Eventos</h1>
+          <p className="subtitle">
+            Consulta y administra eventos propios y de terceros de Meraki Teatrobar.
+          </p>
         </div>
         {esPropietario && (
-          <Link
-            href="/admin/eventos/nuevo"
-            className="rounded-lg bg-fuchsia-600 px-5 py-3 text-sm font-semibold hover:bg-fuchsia-500"
-          >
-            Registrar evento
+          <Link href="/admin/eventos/nuevo" className="btn btn-primary">
+            + Registrar Evento
           </Link>
         )}
       </div>
 
+      <form className="filters-bar" method="GET">
+        <input
+          type="search"
+          name="q"
+          defaultValue={q}
+          placeholder="Buscar por título u organizador..."
+        />
+        <select name="estado" defaultValue={estado}>
+          <option value="ALL">Todos los estados</option>
+          <option value="BORRADOR">Borrador</option>
+          <option value="PUBLICADO">Publicado</option>
+          <option value="OCULTO">Oculto</option>
+        </select>
+        <button type="submit" className="btn btn-secondary">
+          Filtrar
+        </button>
+      </form>
+
       {eventos.length === 0 ? (
-        <p className="mt-10 rounded-xl border border-dashed border-white/15 p-8 text-center text-zinc-400">
-          Todavía no hay eventos registrados.
-        </p>
+        <div className="empty-state">No se encontraron eventos con los filtros seleccionados.</div>
       ) : (
-        <div className="mt-8 overflow-x-auto rounded-xl border border-white/10">
-          <table className="w-full min-w-[720px] text-left text-sm">
-            <thead className="bg-white/5 text-zinc-400">
-              <tr>
-                <th className="px-4 py-3">Evento</th>
-                <th className="px-4 py-3">Fecha</th>
-                <th className="px-4 py-3">Estado</th>
-                {esPropietario && <th className="px-4 py-3">Acciones</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {eventos.map((evento) => (
-                <tr key={evento.id_evento} className="border-t border-white/10">
-                  <td className="px-4 py-4">
-                    <p className="font-medium text-white">{evento.titulo}</p>
-                    <p className="text-xs text-zinc-500">
-                      {evento.organizador || 'Sin organizador'}
-                    </p>
-                  </td>
-                  <td className="px-4 py-4 text-zinc-300">
-                    {evento.fecha?.slice(0, 10)}
-                  </td>
-                  <td className="px-4 py-4">
-                    <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-zinc-200">
-                      {evento.estado_publicacion}
-                    </span>
-                  </td>
+        <div className="admin-cards-grid">
+          {eventos.map((evento) => (
+            <article className="admin-event-card" key={evento.id_evento}>
+              <div
+                className="event-cover"
+                style={{
+                  ...estiloPortada(evento.imagen, evento.id_evento),
+                  height: "140px",
+                }}
+              >
+                <div className="event-cover-top">
+                  <span className="event-date-badge">
+                    📅 {formatearFecha(evento.fecha)}
+                  </span>
+                  <StatusBadge estado={evento.estado_publicacion} />
+                </div>
+              </div>
+              <div className="admin-event-body">
+                <span style={{ fontSize: "0.75rem", color: "var(--accent-gold)", fontWeight: 600 }}>
+                  {evento.organizador || "Meraki Teatrobar"}
+                </span>
+                <h3 style={{ fontSize: "1.05rem", margin: "0.25rem 0 0.4rem" }}>
+                  {evento.titulo}
+                </h3>
+                <p style={{ fontSize: "0.84rem", color: "var(--text-muted)", flex: 1 }}>
+                  {evento.descripcion}
+                </p>
+                <div className="admin-event-actions">
+                  <Link
+                    href={`/admin/eventos/${evento.id_evento}`}
+                    className="btn btn-secondary btn-sm"
+                  >
+                    Ver detalles
+                  </Link>
                   {esPropietario && (
-                    <td className="px-4 py-4">
-                      <div className="flex flex-wrap items-center gap-2">
-                        {estados.map((estado) => (
-                          <form key={estado} action={cambiarEstadoEvento}>
-                            <input
-                              type="hidden"
-                              name="id"
-                              value={evento.id_evento}
-                            />
-                            <input type="hidden" name="estado" value={estado} />
-                            <button
-                              type="submit"
-                              className={`rounded px-2 py-1 text-xs ${
-                                evento.estado_publicacion === estado
-                                  ? 'bg-fuchsia-600 text-white'
-                                  : 'bg-white/10 text-zinc-300 hover:bg-white/20'
-                              }`}
-                            >
-                              {estado}
+                    <>
+                      <Link
+                        href={`/admin/eventos/${evento.id_evento}/editar`}
+                        className="btn btn-gold btn-sm"
+                      >
+                        Editar
+                      </Link>
+                      {ESTADOS.map((estadoEvento) =>
+                        estadoEvento === evento.estado_publicacion ? null : (
+                          <form
+                            key={estadoEvento}
+                            action={cambiarEstadoEvento}
+                          >
+                            <input type="hidden" name="id" value={evento.id_evento} />
+                            <input type="hidden" name="estado" value={estadoEvento} />
+                            <button type="submit" className="btn btn-secondary btn-sm">
+                              {estadoEvento === "PUBLICADO"
+                                ? "Publicar"
+                                : estadoEvento === "OCULTO"
+                                  ? "Ocultar"
+                                  : "Borrador"}
                             </button>
                           </form>
-                        ))}
-                        <Link
-                          href={`/admin/eventos/${evento.id_evento}/editar`}
-                          className="rounded px-2 py-1 text-xs text-fuchsia-300 hover:underline"
-                        >
-                          Editar
-                        </Link>
-                      </div>
-                    </td>
+                        ),
+                      )}
+                    </>
                   )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                </div>
+              </div>
+            </article>
+          ))}
         </div>
       )}
     </div>
-  )
+  );
 }

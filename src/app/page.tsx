@@ -1,132 +1,265 @@
-import Link from 'next/link'
+import Link from "next/link";
 
-import { createClient } from '@/lib/supabase/server'
-import type { Evento } from '@/lib/types'
+import { MerakiLogo, MerakiMark } from "@/components/meraki-logo";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { formatearFecha } from "@/lib/formato";
+import { etiquetaPortada, estiloPortada } from "@/lib/portadas";
+import { createClient } from "@/lib/supabase/server";
+import type { Evento } from "@/lib/types";
 
-// Información fija mientras no exista un módulo para administrarla.
-// Reemplaza los datos de contacto cuando tengas los valores reales.
 const contacto = {
-  ciudad: 'Santa Cruz de la Sierra, Bolivia',
-  whatsapp: 'Por completar',
-  instagram: 'Por completar',
-}
+  correo: "contacto@merakiteatrobar.com",
+  telefono: "+591 700-12345",
+};
 
 export default async function Home() {
-  const supabase = await createClient()
+  const supabase = await createClient();
   const { data } = await supabase
-    .from('eventos')
-    .select('*')
-    .eq('estado_publicacion', 'PUBLICADO')
-    .order('fecha', { ascending: true })
+    .from("eventos")
+    .select("*")
+    .eq("estado_publicacion", "PUBLICADO")
+    .order("fecha", { ascending: true });
 
-  const eventos = (data ?? []) as Evento[]
+  const eventos = (data ?? []) as Evento[];
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
-      <header className="border-b border-white/10">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-          <span className="font-semibold tracking-[0.2em]">
-            MERAKI <span className="text-fuchsia-400">TEATROBAR</span>
-          </span>
-          <nav className="flex items-center gap-6 text-sm text-zinc-300">
-            <a href="#eventos" className="hover:text-white">
-              Eventos
-            </a>
-            <a href="#contacto" className="hover:text-white">
-              Contacto
-            </a>
-            <Link href="/login" className="text-zinc-500 hover:text-white">
-              Ingreso
-            </Link>
+    <div className="flex-1">
+      <header className="public-header">
+        <div className="wrap nav-wrapper">
+          <Link href="/" aria-label="Meraki Teatrobar">
+            <MerakiLogo />
+          </Link>
+
+          <nav className="public-nav">
+            <a href="#inicio">Inicio</a>
+            <a href="#eventos">Eventos</a>
+            <a href="#nosotros">Nosotros</a>
+            <a href="#contacto">Contacto</a>
           </nav>
+
+          <div className="nav-actions">
+            <ThemeToggle />
+            <Link href="/login" className="btn btn-outline-accent btn-sm">
+              Panel Gestión
+            </Link>
+          </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-6">
-        <section className="py-24">
-          <p className="text-xs tracking-[0.35em] text-fuchsia-400">
-            TEATRO · CULTURA · ENCUENTROS
-          </p>
-          <h1 className="mt-6 max-w-3xl text-5xl font-semibold leading-tight sm:text-6xl">
-            Un lugar para vivir el arte en {contacto.ciudad.split(',')[0]}.
-          </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-zinc-400">
-            Meraki Teatrobar es un espacio de cultura y espectáculos. Aquí
-            encontrarás nuestros eventos publicados y podrás acceder a sus detalles.
-          </p>
+      <main>
+        <section id="inicio" className="hero-section">
+          <div className="hero-glow" />
+          <div className="wrap hero-grid">
+            <div className="hero-content">
+              <span className="badge-pill">🎭 Cartelera Oficial · Prototipo Visual</span>
+              <h1>
+                Escena en vivo, atmósfera nocturna y eventos en Meraki Teatrobar.
+              </h1>
+              <p>
+                Descubre nuestras próximas funciones propias y eventos especiales
+                en sala. Consulta los detalles de cada espectáculo y accede a sus
+                enlaces oficiales de entradas.
+              </p>
+              <div className="hero-buttons">
+                <a href="#eventos" className="btn btn-primary">
+                  Ver Eventos Publicados
+                </a>
+                <a href="#contacto" className="btn btn-secondary">
+                  Alquiler y Contacto
+                </a>
+              </div>
+            </div>
+
+            <div className="hero-visual">
+              <div className="hero-card-showcase">
+                <div className="showcase-gradient">
+                  <MerakiMark className="meraki-svg-large" color="#F5F3F0" />
+                  <h3>MERAKI</h3>
+                  <p>TEATRO BAR</p>
+                  <span className="gold-tag">Producciones &amp; Alquileres</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </section>
 
-        <section id="eventos" className="border-t border-white/10 py-20">
-          <h2 className="text-3xl font-semibold">Próximos eventos</h2>
-          <p className="mt-2 text-zinc-400">
-            Solo mostramos los eventos que el propietario ha publicado.
-          </p>
+        <section id="eventos" className="section-block">
+          <div className="wrap">
+            <div className="section-header">
+              <div>
+                <span className="section-kicker">Cartelera Vigente</span>
+                <h2>Eventos Publicados</h2>
+              </div>
+              <p className="section-note">
+                Solo se muestran eventos con estado <strong>Publicado</strong>.
+                Los borradores y ocultos son privados.
+              </p>
+            </div>
 
-          {eventos.length === 0 ? (
-            <p className="mt-10 rounded-xl border border-dashed border-white/15 p-10 text-center text-zinc-400">
-              No hay eventos publicados en este momento.
-            </p>
-          ) : (
-            <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {eventos.map((evento) => (
-                <Link
-                  key={evento.id_evento}
-                  href={`/eventos/${evento.id_evento}`}
-                  className="group overflow-hidden rounded-2xl border border-white/10 bg-zinc-900 transition hover:border-fuchsia-500/60"
-                >
-                  <div
-                    className="h-44 bg-cover bg-center bg-zinc-800"
-                    style={
-                      evento.imagen
-                        ? { backgroundImage: `url(${evento.imagen})` }
-                        : undefined
-                    }
-                  />
-                  <div className="p-6">
-                    <p className="text-xs text-fuchsia-400">
-                      {evento.fecha?.slice(0, 10)}
+            {eventos.length === 0 ? (
+              <div className="empty-state" style={{ gridColumn: "1 / -1" }}>
+                No hay eventos publicados en este momento.
+              </div>
+            ) : (
+              <div className="events-grid">
+                {eventos.map((evento) => (
+                  <article className="event-card" key={evento.id_evento}>
+                    <div
+                      className="event-cover"
+                      style={estiloPortada(
+                        evento.imagen,
+                        evento.id_evento,
+                      )}
+                    >
+                      <div className="event-cover-top">
+                        <span className="event-date-badge">
+                          📅 {formatearFecha(evento.fecha)}
+                        </span>
+                        <span className="gold-tag">
+                          {etiquetaPortada(evento.imagen, evento.id_evento)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="event-body">
+                      <div className="event-meta-line">
+                        Organiza: {evento.organizador || "Meraki Teatrobar"}
+                      </div>
+                      <h3>{evento.titulo}</h3>
+                      <p className="event-desc">{evento.descripcion}</p>
+                      <div className="event-card-actions">
+                        <Link
+                          href={`/eventos/${evento.id_evento}`}
+                          className="btn btn-secondary btn-sm"
+                        >
+                          Ver detalles
+                        </Link>
+                        {evento.enlace_entradas && (
+                          <a
+                            href={evento.enlace_entradas}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-primary btn-sm"
+                          >
+                            Entradas ↗
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+
+        <section id="nosotros" className="section-block section-alt">
+          <div className="wrap about-grid">
+            <div>
+              <span className="section-kicker">Sobre Meraki Teatrobar</span>
+              <h2>
+                Un escenario cercano para propuestas propias y de terceros
+              </h2>
+              <p>
+                <strong>Meraki Teatrobar</strong> combina la calidez de un bar
+                cultural con la puesta en escena de espectáculos en vivo.
+                Realizamos producciones propias —como comedia, teatro y noches
+                musicales— y también ponemos nuestras instalaciones a
+                disposición de organizadores externos.
+              </p>
+              <div className="about-highlights">
+                <div className="highlight-item">
+                  <span className="highlight-dot" />
+                  <div>
+                    <strong>Eventos Propios</strong>
+                    <p>
+                      Temporadas teatrales, stand-up, ciclos acústicos y
+                      programación semanal.
                     </p>
-                    <h3 className="mt-2 text-xl font-semibold group-hover:text-fuchsia-300">
-                      {evento.titulo}
-                    </h3>
-                    <p className="mt-3 line-clamp-3 text-sm leading-6 text-zinc-400">
-                      {evento.descripcion}
-                    </p>
-                    <span className="mt-5 inline-block text-sm text-fuchsia-300">
-                      Ver detalles →
-                    </span>
                   </div>
-                </Link>
-              ))}
+                </div>
+                <div className="highlight-item">
+                  <span className="highlight-dot gold" />
+                  <div>
+                    <strong>Alquiler para Terceros</strong>
+                    <p>
+                      Espacio escénico equipado con sonido e iluminación para
+                      lanzamientos, elencos y eventos privados.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
-          )}
+
+            <div className="about-info-card">
+              <h3>Información General del Establecimiento</h3>
+              <ul className="info-list">
+                <li>
+                  <span>🎭 Modalidad:</span> Teatro bar con funciones propias y
+                  alquiler de sala
+                </li>
+                <li>
+                  <span>🎟️ Entradas:</span> Enlaces externos habilitados por
+                  cada evento cuando corresponde
+                </li>
+                <li>
+                  <span>💡 Técnica:</span> Iluminación escénica y sistema de
+                  audio para presentaciones en vivo
+                </li>
+                <li>
+                  <span>📌 Nota del prototipo:</span> Información y eventos de
+                  demostración
+                </li>
+              </ul>
+            </div>
+          </div>
         </section>
 
-        <section
-          id="contacto"
-          className="border-t border-white/10 py-20"
-        >
-          <h2 className="text-3xl font-semibold">Contacto</h2>
-          <div className="mt-6 grid gap-4 sm:grid-cols-3">
-            <div className="rounded-xl border border-white/10 bg-zinc-900 p-6">
-              <p className="text-sm text-zinc-400">Ubicación</p>
-              <p className="mt-2">{contacto.ciudad}</p>
-            </div>
-            <div className="rounded-xl border border-white/10 bg-zinc-900 p-6">
-              <p className="text-sm text-zinc-400">WhatsApp</p>
-              <p className="mt-2">{contacto.whatsapp}</p>
-            </div>
-            <div className="rounded-xl border border-white/10 bg-zinc-900 p-6">
-              <p className="text-sm text-zinc-400">Instagram</p>
-              <p className="mt-2">{contacto.instagram}</p>
+        <section id="contacto" className="section-block">
+          <div className="wrap">
+            <div className="contact-banner">
+              <div>
+                <span className="section-kicker">Contacto y Consultas</span>
+                <h2>
+                  ¿Consultas sobre eventos, entradas o alquiler de la sala?
+                </h2>
+                <p>
+                  Escríbenos o comunícate por nuestros canales oficiales para
+                  coordinar fechas, conocer requerimientos técnicos o consultar
+                  información general de la cartelera.
+                </p>
+              </div>
+
+              <div className="contact-channels">
+                <div className="channel-card">
+                  <span className="channel-label">Correo Electrónico</span>
+                  <strong>{contacto.correo}</strong>
+                </div>
+                <div className="channel-card">
+                  <span className="channel-label">Teléfono de Contacto</span>
+                  <strong>{contacto.telefono}</strong>
+                </div>
+                <div className="social-row">
+                  <span className="social-chip">Instagram @merakiteatrobar</span>
+                  <span className="social-chip">Facebook Meraki</span>
+                  <span className="social-chip">TikTok</span>
+                </div>
+              </div>
             </div>
           </div>
         </section>
       </main>
 
-      <footer className="border-t border-white/10 py-8 text-center text-sm text-zinc-500">
-        © {new Date().getFullYear()} Meraki Teatrobar · miaudata
+      <footer className="public-footer">
+        <div className="wrap footer-flex">
+          <div>
+            <strong>MERAKI TEATRO BAR</strong> — Sistema de Gestión de Eventos y
+            Tareas Promocionales (Prototipo)
+          </div>
+          <Link href="/login" className="link-btn">
+            Iniciar sesión en el panel
+          </Link>
+        </div>
       </footer>
     </div>
-  )
+  );
 }

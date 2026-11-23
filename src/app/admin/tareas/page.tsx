@@ -1,114 +1,138 @@
-import Link from 'next/link'
+import Link from "next/link";
 
-import { requireUsuario } from '@/lib/auth'
-import type { EstadoTarea, Tarea } from '@/lib/types'
-import { cambiarEstadoTarea } from '../actions'
+import { StatusBadge } from "@/components/status-badge";
+import { requireUsuario } from "@/lib/auth";
+import { formatearFecha } from "@/lib/formato";
+import type { EstadoTarea, Tarea } from "@/lib/types";
+import { cambiarEstadoTarea } from "../actions";
 
-type TareaConEvento = Tarea & { eventos: { titulo: string } | null }
+type TareaConEvento = Tarea & { eventos: { titulo: string } | null };
 
-const estados: EstadoTarea[] = [
-  'PENDIENTE',
-  'EN_PROGRESO',
-  'COMPLETADA',
-  'CANCELADA',
-]
+const ESTADOS: EstadoTarea[] = [
+  "PENDIENTE",
+  "EN_PROGRESO",
+  "COMPLETADA",
+  "CANCELADA",
+];
 
-export default async function TareasAdmin() {
-  const { supabase, rol } = await requireUsuario()
-  const esPropietario = rol === 'PROPIETARIO'
+type Props = {
+  searchParams: Promise<{ q?: string; estado?: string; tipo?: string }>;
+};
+
+export default async function TareasAdmin({ searchParams }: Props) {
+  const { supabase, rol } = await requireUsuario();
+  const esPropietario = rol === "PROPIETARIO";
+  const { q = "", estado = "ALL", tipo = "ALL" } = await searchParams;
 
   const { data } = await supabase
-    .from('tareas_promocionales')
-    .select('*, eventos ( titulo )')
-    .order('fecha_limite', { ascending: true })
+    .from("tareas_promocionales")
+    .select("*, eventos ( titulo )")
+    .order("fecha_limite", { ascending: true });
 
-  const tareas = (data ?? []) as TareaConEvento[]
+  const consulta = q.trim().toLowerCase();
+  const tareas = ((data ?? []) as TareaConEvento[]).filter((tarea) => {
+    const coincideEstado = estado === "ALL" || tarea.estado === estado;
+    const coincideTipo =
+      tipo === "ALL" ||
+      (tipo === "EVENT" && Boolean(tarea.id_evento)) ||
+      (tipo === "GENERAL" && !tarea.id_evento);
+    const texto = `${tarea.titulo} ${tarea.descripcion} ${tarea.eventos?.titulo ?? ""}`.toLowerCase();
+    return coincideEstado && coincideTipo && (!consulta || texto.includes(consulta));
+  });
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="admin-topbar">
         <div>
-          <p className="text-sm tracking-[0.25em] text-fuchsia-400">
-            TAREAS PROMOCIONALES
+          <h1>Tareas Promocionales</h1>
+          <p className="subtitle">
+            Organización de difusión, diseños, videos, agenda semanal, sonido e
+            iluminación (Responsable: Propietario).
           </p>
-          <h1 className="mt-2 text-3xl font-semibold">Seguimiento de tareas</h1>
         </div>
         {esPropietario && (
-          <Link
-            href="/admin/tareas/nueva"
-            className="rounded-lg bg-fuchsia-600 px-5 py-3 text-sm font-semibold hover:bg-fuchsia-500"
-          >
-            Registrar tarea
+          <Link href="/admin/tareas/nueva" className="btn btn-primary">
+            + Registrar Tarea
           </Link>
         )}
       </div>
 
+      <form className="filters-bar" method="GET">
+        <input
+          type="search"
+          name="q"
+          defaultValue={q}
+          placeholder="Buscar tarea por título o descripción..."
+        />
+        <select name="estado" defaultValue={estado}>
+          <option value="ALL">Todos los estados</option>
+          <option value="PENDIENTE">Pendiente</option>
+          <option value="EN_PROGRESO">En progreso</option>
+          <option value="COMPLETADA">Completada</option>
+          <option value="CANCELADA">Cancelada</option>
+        </select>
+        <select name="tipo" defaultValue={tipo}>
+          <option value="ALL">Todas las tareas</option>
+          <option value="EVENT">Asociadas a un evento</option>
+          <option value="GENERAL">Tareas generales</option>
+        </select>
+        <button type="submit" className="btn btn-secondary">
+          Filtrar
+        </button>
+      </form>
+
       {tareas.length === 0 ? (
-        <p className="mt-10 rounded-xl border border-dashed border-white/15 p-8 text-center text-zinc-400">
-          Todavía no hay tareas registradas.
-        </p>
+        <div className="empty-state">
+          No hay tareas promocionales que coincidan con el filtro.
+        </div>
       ) : (
-        <div className="mt-8 overflow-x-auto rounded-xl border border-white/10">
-          <table className="w-full min-w-[760px] text-left text-sm">
-            <thead className="bg-white/5 text-zinc-400">
-              <tr>
-                <th className="px-4 py-3">Tarea</th>
-                <th className="px-4 py-3">Evento asociado</th>
-                <th className="px-4 py-3">Fecha límite</th>
-                <th className="px-4 py-3">Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tareas.map((tarea) => (
-                <tr key={tarea.id_tarea} className="border-t border-white/10">
-                  <td className="px-4 py-4">
-                    <p className="font-medium text-white">{tarea.titulo}</p>
-                    <p className="text-xs text-zinc-500">{tarea.descripcion}</p>
-                  </td>
-                  <td className="px-4 py-4 text-zinc-300">
-                    {tarea.eventos?.titulo ?? 'Tarea general'}
-                  </td>
-                  <td className="px-4 py-4 text-zinc-300">
-                    {tarea.fecha_limite?.slice(0, 10)}
-                  </td>
-                  <td className="px-4 py-4">
-                    {esPropietario ? (
-                      <form action={cambiarEstadoTarea} className="flex gap-2">
-                        <input
-                          type="hidden"
-                          name="id"
-                          value={tarea.id_tarea}
-                        />
-                        <select
-                          name="estado"
-                          defaultValue={tarea.estado}
-                          className="rounded bg-zinc-800 px-2 py-1 text-xs text-white"
-                        >
-                          {estados.map((estado) => (
-                            <option key={estado} value={estado}>
-                              {estado}
-                            </option>
-                          ))}
-                        </select>
-                        <button
-                          type="submit"
-                          className="rounded bg-white/10 px-2 py-1 text-xs hover:bg-white/20"
-                        >
-                          Actualizar
-                        </button>
-                      </form>
-                    ) : (
-                      <span className="rounded-full bg-white/10 px-3 py-1 text-xs">
-                        {tarea.estado}
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="tasks-stack">
+          {tareas.map((tarea) => (
+            <div className="task-card" key={tarea.id_tarea}>
+              <div className="task-main">
+                <div className="task-top-row">
+                  <span className="task-title">{tarea.titulo}</span>
+                  {esPropietario && <StatusBadge estado={tarea.estado} />}
+                </div>
+                <p className="task-desc">{tarea.descripcion}</p>
+                <div className="task-meta">
+                  <span>
+                    {tarea.id_evento
+                      ? `🎭 Evento: ${tarea.eventos?.titulo ?? "Evento asociado"}`
+                      : "🏛️ Tarea general del establecimiento"}
+                  </span>
+                  <span>📅 Límite: {formatearFecha(tarea.fecha_limite)}</span>
+                  <span>👤 Responsable: Propietario</span>
+                </div>
+              </div>
+              <div className="task-controls">
+                {esPropietario ? (
+                  <form action={cambiarEstadoTarea} style={{ display: "flex", gap: "0.5rem" }}>
+                    <input type="hidden" name="id" value={tarea.id_tarea} />
+                    <select
+                      name="estado"
+                      defaultValue={tarea.estado}
+                      className="task-status-select"
+                      aria-label="Cambiar estado de tarea"
+                    >
+                      {ESTADOS.map((estadoTarea) => (
+                        <option key={estadoTarea} value={estadoTarea}>
+                          {estadoTarea === "EN_PROGRESO" ? "En progreso" : estadoTarea === "PENDIENTE" ? "Pendiente" : estadoTarea === "COMPLETADA" ? "Completada" : "Cancelada"}
+                        </option>
+                      ))}
+                    </select>
+                    <button type="submit" className="btn btn-secondary btn-sm">
+                      Actualizar
+                    </button>
+                  </form>
+                ) : (
+                  <StatusBadge estado={tarea.estado} />
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
-  )
+  );
 }

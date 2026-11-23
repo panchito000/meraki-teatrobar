@@ -1,97 +1,123 @@
-'use client'
+"use client";
 
-import { useState, type FormEvent } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState, type FormEvent } from "react";
 
-import { createClient } from '@/lib/supabase/client'
+import { MerakiMark } from "@/components/meraki-logo";
+import { createClient } from "@/lib/supabase/client";
+
+const CUENTAS = [
+  {
+    rol: "Propietario",
+    descripcion: "Gestión completa de eventos y tareas promocionales",
+    correo: "propietario@meraki.test",
+    clave: "Meraki2026!",
+  },
+  {
+    rol: "Administradora",
+    descripcion: "Acceso de solo lectura (consulta de eventos y tareas)",
+    correo: "propietario1@meraki.test",
+    clave: "Meraki2026!",
+  },
+];
 
 export default function LoginPage() {
-  const router = useRouter()
-  const [error, setError] = useState<string | null>(null)
-  const [cargando, setCargando] = useState(false)
+  const router = useRouter();
+  const [correo, setCorreo] = useState("");
+  const [clave, setClave] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [cargando, setCargando] = useState(false);
 
   async function entrar(evento: FormEvent<HTMLFormElement>) {
-    evento.preventDefault()
-    setCargando(true)
-    setError(null)
+    evento.preventDefault();
+    setCargando(true);
+    setError(null);
 
-    const datos = new FormData(evento.currentTarget)
     const { error } = await createClient().auth.signInWithPassword({
-      email: String(datos.get('correo') ?? ''),
-      password: String(datos.get('clave') ?? ''),
-    })
+      email: correo,
+      password: clave,
+    });
 
     if (error) {
-      setError('Correo o contraseña incorrectos.')
-      setCargando(false)
-      return
+      setError("Correo o contraseña incorrectos.");
+      setCargando(false);
+      return;
     }
 
-    router.push('/admin')
-    router.refresh()
+    router.push("/admin");
+    router.refresh();
   }
 
   return (
-    <main className="flex flex-1 items-center justify-center bg-zinc-950 px-6 py-16">
-      <div className="w-full max-w-md rounded-2xl border border-white/10 bg-zinc-900 p-8 shadow-2xl">
-        <p className="text-xs font-semibold tracking-[0.3em] text-fuchsia-400">
-          MERAKI TEATROBAR
-        </p>
-        <h1 className="mt-3 text-3xl font-semibold text-white">
-          Ingreso al sistema
-        </h1>
-        <p className="mt-2 text-sm text-zinc-400">
-          Área administrativa exclusiva para el propietario y la administradora.
-        </p>
+    <main className="login-container flex-1">
+      <div className="hero-glow" />
+      <div className="login-card">
+        <Link href="/" className="back-public-btn">
+          ← Volver a la página pública
+        </Link>
 
-        <form onSubmit={entrar} className="mt-8 space-y-5">
-          <div>
-            <label htmlFor="correo" className="block text-sm text-zinc-300">
-              Correo electrónico
-            </label>
+        <div className="login-brand">
+          <MerakiMark className="meraki-svg" />
+          <h2>MERAKI</h2>
+          <span>ACCESO AL ÁREA ADMINISTRATIVA</span>
+        </div>
+
+        <form onSubmit={entrar}>
+          <div className="form-group">
+            <label htmlFor="correo">Correo electrónico</label>
             <input
               id="correo"
               name="correo"
               type="email"
               required
               autoComplete="email"
-              className="mt-2 w-full rounded-lg border border-white/10 bg-zinc-800 px-4 py-3 text-white outline-none focus:border-fuchsia-500"
+              placeholder="correo@meraki.com"
+              value={correo}
+              onChange={(evento) => setCorreo(evento.target.value)}
             />
           </div>
-
-          <div>
-            <label htmlFor="clave" className="block text-sm text-zinc-300">
-              Contraseña
-            </label>
+          <div className="form-group">
+            <label htmlFor="clave">Contraseña</label>
             <input
               id="clave"
               name="clave"
               type="password"
               required
               autoComplete="current-password"
-              className="mt-2 w-full rounded-lg border border-white/10 bg-zinc-800 px-4 py-3 text-white outline-none focus:border-fuchsia-500"
+              placeholder="••••••"
+              value={clave}
+              onChange={(evento) => setClave(evento.target.value)}
             />
           </div>
-
-          {error && <p className="text-sm text-red-400">{error}</p>}
-
-          <button
-            type="submit"
-            disabled={cargando}
-            className="w-full rounded-lg bg-fuchsia-600 px-4 py-3 font-semibold text-white transition hover:bg-fuchsia-500 disabled:opacity-60"
-          >
-            {cargando ? 'Ingresando…' : 'Ingresar'}
+          {error && <p className="error-text">{error}</p>}
+          <button type="submit" className="btn btn-primary btn-full" disabled={cargando}>
+            {cargando ? "Ingresando…" : "Iniciar Sesión"}
           </button>
         </form>
 
-        <Link
-          href="/"
-          className="mt-6 block text-center text-sm text-zinc-400 hover:text-white"
-        >
-          Volver a la página pública
-        </Link>
+        <div className="demo-accounts-box">
+          <p className="demo-title">Cuentas de demostración (clic para llenar):</p>
+          <div className="demo-grid">
+            {CUENTAS.map((cuenta) => (
+              <button
+                key={cuenta.correo}
+                type="button"
+                className="demo-btn"
+                onClick={() => {
+                  setCorreo(cuenta.correo);
+                  setClave(cuenta.clave);
+                  setError(null);
+                }}
+              >
+                <strong>{cuenta.rol}</strong>
+                <span>{cuenta.descripcion}</span>
+                <code>{cuenta.correo} / {cuenta.clave}</code>
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
     </main>
-  )
+  );
 }
